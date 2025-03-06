@@ -1,398 +1,320 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="bwliu">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BWliuBase 专业写作平台</title>
-    <!-- 依赖库 -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-    
-    <!-- 核心样式系统 350+ 行 -->
+    <title>创作中心 - bwliubase</title>
+    <!-- 引入基础样式 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
     <style>
+        /* 基础样式适配 */
         :root {
-            /* 设计系统变量 */
-            --primary-900: #0a192f;
-            --primary-500: #1f4068;
-            --primary-100: #c7d2fe;
-            --surface-0: #ffffff;
-            --surface-50: #f8fafc;
-            --surface-200: #e2e8f0;
-            --text-primary: #1e293b;
-            --text-secondary: #475569;
-            --success: #22c55e;
-            --error: #ef4444;
-            --warning: #eab308;
-            --radius-lg: 12px;
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            --font-sans: 'Inter var', system-ui;
-            --font-mono: 'Fira Code', monospace;
-            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --primary-color: #2d8cf0;
+            --background-color: #f8f9fa;
+            --border-color: #dcdfe6;
         }
 
-        /* 基础布局 */
         body {
-            font-family: var(--font-sans);
-            background: var(--surface-50);
-            color: var(--text-primary);
             margin: 0;
-            min-height: 100vh;
-            display: grid;
-            grid-template-rows: auto 1fr;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--background-color);
         }
 
-        /* 应用栏 */
-        .app-bar {
-            background: var(--surface-0);
-            box-shadow: var(--shadow-xl);
-            padding: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .brand {
-            font-size: 1.75rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: var(--primary-900);
-        }
-
-        /* 主编辑器布局 */
         .editor-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            height: calc(100vh - 80px);
-            max-width: 1800px;
+            gap: 20px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 1rem;
         }
 
-        /* 编辑器面板 */
+        /* 编辑器区域 */
         .editor-pane {
-            background: var(--surface-0);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-xl);
-            display: grid;
-            grid-template-rows: auto 1fr auto;
-            overflow: hidden;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
         }
 
-        /* 工具栏系统 */
         .editor-toolbar {
-            padding: 1rem;
-            border-bottom: 1px solid var(--surface-200);
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
-            gap: 0.5rem;
+            gap: 8px;
             flex-wrap: wrap;
-            background: var(--surface-50);
         }
 
-        .tool-btn {
-            padding: 0.5rem 1rem;
-            background: var(--surface-0);
-            border: 1px solid var(--surface-200);
-            border-radius: 6px;
+        .toolbar-btn {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
             cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-family: var(--font-sans);
-            font-weight: 500;
+            transition: all 0.3s;
         }
 
-        .tool-btn:hover {
-            border-color: var(--primary-500);
-            color: var(--primary-500);
-            transform: translateY(-1px);
+        .toolbar-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
         }
 
-        /* 代码编辑器增强 */
         #editor {
             width: 100%;
-            height: 100%;
-            padding: 1.5rem;
+            height: 600px;
+            padding: 20px;
             border: none;
             resize: none;
-            font-family: var(--font-mono);
-            font-size: 0.9375rem;
-            line-height: 1.8;
-            tab-size: 2;
-            background: var(--surface-50);
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
         }
 
-        /* 预览系统 */
+        /* 预览区域 */
         .preview-pane {
-            background: var(--surface-0);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-xl);
-            display: grid;
-            grid-template-rows: auto 1fr;
-            overflow: hidden;
+            padding: 20px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow-y: auto;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
         }
 
         .preview-content {
-            padding: 2rem;
-            overflow-y: auto;
+            line-height: 1.6;
         }
 
-        /* 状态管理系统 */
-        .status-bar {
-            background: var(--primary-900);
-            color: white;
-            padding: 0.75rem 1rem;
+        .preview-content img {
+            max-width: 100%;
+        }
+
+        .preview-content code {
+            background-color: #f3f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .preview-content pre code {
+            display: block;
+            padding: 15px;
+            overflow-x: auto;
+        }
+
+        /* 标签管理 */
+        .tag-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .tag-input {
             display: flex;
-            justify-content: space-between;
-            font-size: 0.875rem;
-        }
-
-        /* 高级组件 */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: none;
+            gap: 10px;
             align-items: center;
-            justify-content: center;
-            z-index: 2000;
         }
 
-        /* 动画系统 */
-        @keyframes slideIn {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        .tag-item {
+            display: inline-flex;
+            align-items: center;
+            background: #e8f4ff;
+            color: var(--primary-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: 4px;
         }
 
-        /* 响应式设计 */
-        @media (max-width: 1280px) {
-            .editor-container {
-                grid-template-columns: 1fr;
-                height: auto;
-            }
+        .tag-remove {
+            cursor: pointer;
+            margin-left: 6px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <!-- 应用栏 -->
-    <header class="app-bar">
-        <div class="brand">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-7-7z"/>
-                <path d="M13 2v7h7"/>
-            </svg>
-            BWliuBase 专业写作中心
-        </div>
-        <div class="actions">
-            <button class="tool-btn" id="btnPublish">
-                <svg width="20" height="20"><use href="#publish-icon"/></svg>
-                发布文章
-            </button>
-        </div>
-    </header>
-
-    <!-- 主编辑器 -->
-    <main class="editor-container">
-        <!-- 编辑区 -->
+    <div class="editor-container">
         <div class="editor-pane">
             <div class="editor-toolbar">
-                <button class="tool-btn" data-action="insertHeading">标题</button>
-                <button class="tool-btn" data-action="insertBold">加粗</button>
-                <button class="tool-btn" data-action="insertItalic">斜体</button>
-                <button class="tool-btn" data-action="insertCode">代码</button>
-                <button class="tool-btn" data-action="insertImage">图片</button>
-                <button class="tool-btn" data-action="showTemplates">模板</button>
-                <button class="tool-btn" data-action="toggleFullscreen">全屏</button>
-            </div>
-            <textarea id="editor" placeholder="开始创作..."></textarea>
-            <div class="status-bar">
-                <span id="wordCount">字数：0</span>
-                <span id="lastSaved">最后保存：从未</span>
-            </div>
-        </div>
-
-        <!-- 预览区 -->
-        <div class="preview-pane">
-            <div class="preview-toolbar">
-                <div class="tool-btn-group">
-                    <button class="tool-btn active" data-preview-tab="content">预览</button>
-                    <button class="tool-btn" data-preview-tab="outline">大纲</button>
-                    <button class="tool-btn" data-preview-tab="analysis">分析</button>
-                </div>
-            </div>
-            <div class="preview-content" id="previewContent">
-                <h1 class="preview-title" id="previewTitle"></h1>
-                <div id="previewBody"></div>
-            </div>
-        </div>
-    </main>
-
-    <!-- 发布模态框 -->
-    <div class="modal-overlay" id="publishModal">
-        <div class="modal-content">
-            <h2>发布设置</h2>
-            <div class="form-group">
-                <label>文章标题</label>
-                <input type="text" id="postTitle" required>
-            </div>
-            <div class="form-group">
-                <label>文章分类</label>
-                <select id="postCategory">
-                    <option value="技术">技术文章</option>
-                    <option value="随笔">生活随笔</option>
-                    <option value="教程">开发教程</option>
+                <button class="toolbar-btn" onclick="formatText('bold')"><strong>B</strong></button>
+                <button class="toolbar-btn" onclick="formatText('italic')"><em>I</em></button>
+                <button class="toolbar-btn" onclick="formatText('link')">🔗</button>
+                <button class="toolbar-btn" onclick="formatText('code')">{ }</button>
+                <button class="toolbar-btn" onclick="formatText('image')">🖼️</button>
+                <input type="file" id="imageUpload" hidden accept="image/*">
+                <select class="toolbar-btn" onchange="insertHeading(this.value)">
+                    <option value="">标题</option>
+                    <option value="# ">H1</option>
+                    <option value="## ">H2</option>
+                    <option value="### ">H3</option>
                 </select>
             </div>
-            <div class="form-actions">
-                <button class="tool-btn primary" id="btnConfirmPublish">确认发布</button>
-                <button class="tool-btn" id="btnCancelPublish">取消</button>
-            </div>
+            <textarea id="editor" placeholder="开始创作..."></textarea>
+        </div>
+
+        <div class="preview-pane">
+            <div id="preview" class="preview-content"></div>
         </div>
     </div>
 
-    <!-- 核心脚本 800+ 行 -->
+    <div class="tag-container">
+        <div class="tag-input">
+            <input type="text" id="tagInput" placeholder="添加标签">
+            <button class="toolbar-btn" onclick="addTag()">添加</button>
+        </div>
+        <div id="tagList"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <button class="toolbar-btn" style="background: var(--primary-color); color: white;" onclick="publishPost()">发布文章</button>
+        <button class="toolbar-btn" onclick="saveDraft()">保存草稿</button>
+        <button class="toolbar-btn" onclick="exportMD()">导出MD</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.18/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script>
-    class BlogEditor {
-        static config = {
-            REPO: 'bwliubase/bwliubase.github.io',
-            BRANCH: 'main',
-            POSTS_DIR: '_posts/',
-            AUTO_SAVE_INTERVAL: 3000,
-            MAX_HISTORY: 100
-        };
+        // 初始化配置
+        marked.setOptions({
+            highlight: function(code, lang) {
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true
+        });
 
-        static state = {
-            content: '',
-            history: [],
-            currentVersion: 0,
-            lastSaved: null,
-            isDraft: true
-        };
-
-        static init() {
-            this.bindEvents();
-            this.initEditor();
-            this.setupAutoSave();
-            this.loadDraft();
-            this.setupPreview();
+        // 实时预览
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        
+        editor.addEventListener('input', updatePreview);
+        
+        function updatePreview() {
+            preview.innerHTML = marked.parse(editor.value);
+            localStorage.setItem('blog_draft', editor.value);
         }
 
-        static bindEvents() {
-            // 工具栏事件绑定
-            document.querySelectorAll('[data-action]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const action = btn.dataset.action;
-                    this.handleAction(action);
-                });
-            });
-
-            // 发布相关事件
-            document.getElementById('btnPublish').addEventListener('click', () => this.showPublishModal());
-            document.getElementById('btnConfirmPublish').addEventListener('click', () => this.publish());
-            document.getElementById('btnCancelPublish').addEventListener('click', () => this.closeModal());
-        }
-
-        static handleAction(action) {
-            const actions = {
-                insertHeading: () => this.insertText('# '),
-                insertBold: () => this.insertText('**'),
-                insertItalic: () => this.insertText('*'),
-                insertCode: () => this.insertText('```\n\n```'),
-                insertImage: () => this.handleImageUpload(),
-                showTemplates: () => this.showTemplatePanel(),
-                toggleFullscreen: () => this.toggleFullscreen()
+        // 文本格式化
+        function formatText(type) {
+            const selection = getSelectionText();
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            
+            const formats = {
+                bold: { prefix: '**', suffix: '**' },
+                italic: { prefix: '*', suffix: '*' },
+                link: { prefix: '[描述](', suffix: ')' },
+                code: { prefix: '```\n', suffix: '\n```' },
+                image: { prefix: '![alt](', suffix: ')' }
             };
-            actions[action]?.();
+
+            if(type === 'image') {
+                document.getElementById('imageUpload').click();
+                return;
+            }
+
+            const format = formats[type];
+            const newText = format.prefix + selection + format.suffix;
+            editor.setRangeText(newText);
+            editor.focus();
+            editor.setSelectionRange(start + format.prefix.length, end + format.prefix.length);
         }
 
-        static async publish() {
-            const title = document.getElementById('postTitle').value;
-            if (!title) return this.showError('标题不能为空');
+        // 插入标题
+        function insertHeading(level) {
+            const pos = editor.selectionStart;
+            editor.setRangeText(level);
+            editor.focus();
+            editor.setSelectionRange(pos + level.length, pos + level.length);
+        }
 
-            try {
-                await GitHubService.commitPost(
-                    this.generateFilename(title),
-                    this.generatePostContent(title),
-                    `发布新文章：${title}`
-                );
-                this.showSuccess('文章发布成功');
-                this.clearDraft();
-                this.closeModal();
-            } catch (error) {
-                this.showError(`发布失败：${error.message}`);
+        // 图片上传处理
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function() {
+                const imageMarkdown = `![图片描述](${reader.result})`;
+                const pos = editor.selectionStart;
+                editor.setRangeText(imageMarkdown);
+                editor.focus();
+                editor.setSelectionRange(pos + imageMarkdown.length, pos + imageMarkdown.length);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 标签管理
+        let tags = JSON.parse(localStorage.getItem('blog_tags') || '[]');
+
+        function renderTags() {
+            const container = document.getElementById('tagList');
+            container.innerHTML = tags.map(tag => `
+                <div class="tag-item">
+                    ${tag}
+                    <span class="tag-remove" onclick="removeTag('${tag}')">×</span>
+                </div>
+            `).join('');
+        }
+
+        function addTag() {
+            const input = document.getElementById('tagInput');
+            const tag = input.value.trim();
+            
+            if(tag && !tags.includes(tag)) {
+                tags.push(tag);
+                localStorage.setItem('blog_tags', JSON.stringify(tags));
+                renderTags();
+                input.value = '';
             }
         }
 
-        static generatePostContent(title) {
-            return `---
-title: "${title}"
-date: "${new Date().toISOString()}"
-layout: post
-categories: ${document.getElementById('postCategory').value}
-tags: [${this.extractTags().join(', ')}]
----
-
-${this.state.content}`;
+        function removeTag(tag) {
+            tags = tags.filter(t => t !== tag);
+            localStorage.setItem('blog_tags', JSON.stringify(tags));
+            renderTags();
         }
 
-        static extractTags() {
-            const tagRegex = /(?<=\s|^)#([a-zA-Z0-9\u4e00-\u9fa5]+)/g;
-            return [...new Set([...this.state.content.matchAll(tagRegex)].map(m => m[1]))];
-        }
-
-        // 其他 30+ 个核心方法...
-    }
-
-    class GitHubService {
-        static async commitPost(filename, content, message) {
-            const encodedContent = btoa(unescape(encodeURIComponent(content)));
-            const response = await fetch(
-                `https://api.github.com/repos/${BlogEditor.config.REPO}/contents/${BlogEditor.config.POSTS_DIR}${encodeURIComponent(filename)}`,
-                {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${this.getToken()}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message,
-                        content: encodedContent,
-                        branch: BlogEditor.config.BRANCH
-                    })
-                }
-            );
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(this.parseError(error));
-            }
-            return response.json();
-        }
-
-        static parseError(error) {
-            const errorMap = {
-                401: '认证失败：无效的访问令牌',
-                403: '权限不足：请检查仓库权限',
-                404: '仓库不存在',
-                422: '提交冲突：文件可能已存在'
+        // 文章发布
+        function publishPost() {
+            const post = {
+                content: editor.value,
+                tags: tags,
+                timestamp: new Date().toISOString()
             };
-            return errorMap[error.status] || error.message;
-        }
-    }
 
-    // 初始化系统
-    window.onload = () => BlogEditor.init();
+            // 此处应替换为实际API调用
+            alert('发布成功！（模拟）');
+            localStorage.removeItem('blog_draft');
+            editor.value = '';
+            tags = [];
+            renderTags();
+        }
+
+        // 保存草稿
+        function saveDraft() {
+            localStorage.setItem('blog_draft', editor.value);
+            alert('草稿已保存！');
+        }
+
+        // 导出MD文件
+        function exportMD() {
+            const blob = new Blob([editor.value], {type: "text/markdown;charset=utf-8"});
+            saveAs(blob, `post_${Date.now()}.md`);
+        }
+
+        // 初始化加载草稿
+        window.onload = function() {
+            const draft = localStorage.getItem('blog_draft');
+            if(draft) {
+                editor.value = draft;
+                updatePreview();
+            }
+            renderTags();
+        }
+
+        // 辅助函数
+        function getSelectionText() {
+            return editor.value.slice(editor.selectionStart, editor.selectionEnd);
+        }
     </script>
 </body>
 </html>
