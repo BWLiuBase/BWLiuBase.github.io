@@ -1,291 +1,246 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN" data-theme="bwliu">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>创作中心 - BWliuBase</title>
+    <title>BWliuBase Pro Editor</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <style>
-        /* 深度适配您网站的风格体系 */
+        /* 深度定制化设计系统 */
         :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --accent: #e74c3c;
-            --background: #ecf0f1;
-            --text: #2c3e50;
-            --border: #bdc3c7;
-            --success: #27ae60;
-            --error: #c0392b;
-            --radius: 8px;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            --font-sans: 'Helvetica Neue', system-ui, sans-serif;
+            --primary-900: #1a365d;
+            --primary-500: #2b6cb0;
+            --primary-100: #ebf8ff;
+            --surface-0: #ffffff;
+            --surface-50: #f8f9fa;
+            --surface-200: #e9ecef;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --space-unit: 1rem;
+            --radius-lg: 12px;
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+            --font-sans: 'Inter var', system-ui;
             --font-mono: 'Fira Code', monospace;
+        }
+
+        @supports (font-variation-settings: normal) {
+            :root { --font-sans: 'Inter var experimental', system-ui; }
         }
 
         body {
             font-family: var(--font-sans);
-            background: var(--background);
-            color: var(--text);
+            background: var(--surface-50);
+            color: var(--text-primary);
             margin: 0;
             min-height: 100vh;
-            display: grid;
-            grid-template-rows: auto 1fr auto;
-        }
-
-        /* 头部导航栏 - 与主站统一 */
-        .site-header {
-            background: white;
-            box-shadow: var(--shadow);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .brand {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        /* 专业编辑器布局 */
-        .editor-container {
-            max-width: 1600px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            height: 80vh;
-        }
-
-        /* 编辑区增强 */
-        .editor-pane {
-            background: white;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
             display: grid;
             grid-template-rows: auto 1fr;
         }
 
-        #editor {
-            padding: 1.5rem;
-            border: none;
-            resize: none;
-            font-family: var(--font-mono);
-            font-size: 0.95rem;
-            line-height: 1.8;
-            background: #f8f9fa;
-        }
-
-        /* 预览区优化 */
-        #preview {
-            background: white;
-            padding: 2rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow-y: auto;
-        }
-
-        .preview-title {
-            font-size: 2.2rem;
-            margin: 0 0 2rem;
-            color: var(--primary);
-            position: relative;
-            padding-bottom: 0.8rem;
-        }
-
-        .preview-title::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background: var(--secondary);
-        }
-
-        /* 专业工具栏 */
-        .editor-toolbar {
+        /* 专业级导航栏 */
+        .app-bar {
+            background: var(--surface-0);
+            box-shadow: var(--shadow-xl);
+            padding: var(--space-unit) calc(var(--space-unit)*2);
             display: flex;
-            gap: 0.6rem;
-            padding: 1rem;
-            border-bottom: 2px solid var(--border);
-            background: linear-gradient(to right, #f8f9fa, #ffffff);
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .tool-btn {
-            padding: 0.6rem 1.2rem;
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 0.6rem;
-            font-weight: 500;
+            gap: 0.75rem;
+            color: var(--primary-900);
         }
 
-        .tool-btn:hover {
-            border-color: var(--secondary);
-            color: var(--secondary);
-            transform: translateY(-1px);
+        /* 智能编辑布局 */
+        .editor-container {
+            display: grid;
+            grid-template-columns: minmax(0,1fr) 400px;
+            height: calc(100vh - 72px);
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: var(--space-unit);
+            gap: var(--space-unit);
         }
 
-        /* 状态系统 */
-        .status-bar {
-            background: var(--primary);
-            color: white;
-            padding: 1rem;
-            text-align: center;
-            position: relative;
+        /* 现代编辑体验 */
+        .editor-pane {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            background: var(--surface-0);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
             overflow: hidden;
         }
 
-        .status-bar::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255,255,255,0.2),
-                transparent
-            );
-            animation: loading 1.5s infinite;
+        #editor {
+            padding: calc(var(--space-unit)*1.5);
+            border: none;
+            resize: none;
+            font-family: var(--font-mono);
+            font-size: 0.9375rem;
+            line-height: 1.7;
+            tab-size: 2;
+            background: var(--surface-50);
+            transition: all 0.2s;
         }
 
-        @keyframes loading {
-            100% { left: 100%; }
+        /* 智能预览系统 */
+        .preview-pane {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            background: var(--surface-0);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+
+        .preview-content {
+            padding: calc(var(--space-unit)*1.5);
+            overflow-y: auto;
+        }
+
+        /* 专业工具面板 */
+        .tool-panel {
+            border-left: 1px solid var(--surface-200);
+            padding: calc(var(--space-unit)*1.5);
+            background: var(--surface-50);
+        }
+
+        /* 状态管理系统 */
+        .status-bar {
+            background: var(--primary-900);
+            color: white;
+            padding: 0.75rem;
+            font-size: 0.875rem;
+            display: flex;
+            justify-content: space-between;
         }
     </style>
 </head>
 <body>
-    <header class="site-header">
+    <header class="app-bar">
         <div class="brand">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-7-7z"/>
+                <path d="M13 2v7h7"/>
             </svg>
-            BWliuBase 创作中心
+            BWliuBase Pro
         </div>
-        <div class="toolbar">
-            <button class="tool-btn" onclick="handleSave()">
-                <svg width="20" height="20"><use href="#save-icon"/></svg>
-                保存草稿
-            </button>
-            <button class="tool-btn" style="color: var(--success)" onclick="showPublishPanel()">
+        <div class="actions">
+            <button class="btn primary" onclick="Editor.publish()">
                 <svg width="20" height="20"><use href="#publish-icon"/></svg>
-                发布文章
+                发布
             </button>
         </div>
     </header>
 
     <main class="editor-container">
+        <!-- 编辑区域 -->
         <div class="editor-pane">
-            <div class="editor-toolbar">
-                <button class="tool-btn" onclick="insertText('# ')">标题</button>
-                <button class="tool-btn" onclick="insertText('**粗体**')">B</button>
-                <button class="tool-btn" onclick="insertText('*斜体*')">I</button>
-                <button class="tool-btn" onclick="insertCodeBlock()">代码</button>
-                <input type="file" id="img-upload" hidden>
-                <button class="tool-btn" onclick="uploadImage()">图片</button>
-                <button class="tool-btn" onclick="showTemplates()">模板</button>
+            <div class="toolbar">
+                <!-- 智能工具栏组件 -->
             </div>
-            <textarea id="editor" placeholder="开始创作..."></textarea>
+            <textarea id="editor" spellcheck="false"></textarea>
+            <div class="status-bar">
+                <span id="wordCount">0 字</span>
+                <span id="syncStatus">已同步</span>
+            </div>
         </div>
-        
-        <div id="preview">
-            <h1 class="preview-title" id="previewTitle"></h1>
-            <div id="previewContent"></div>
+
+        <!-- 预览与设置 -->
+        <div class="preview-pane">
+            <div class="preview-tabs">
+                <button class="tab active">预览</button>
+                <button class="tab">元数据</button>
+                <button class="tab">分析</button>
+            </div>
+            <div class="preview-content">
+                <article class="prose max-w-none">
+                    <h1 id="previewTitle"></h1>
+                    <div id="previewContent"></div>
+                </article>
+            </div>
         </div>
     </main>
 
-    <!-- 增强发布面板 -->
-    <div id="publishPanel" class="modal">
-        <div class="modal-content">
-            <h3>发布设置</h3>
-            <div class="form-group">
-                <label>文章标题</label>
-                <input type="text" id="postTitle" required>
-            </div>
-            <div class="form-group">
-                <label>文章分类</label>
-                <select id="postCategory">
-                    <option value="技术">技术文章</option>
-                    <option value="随笔">生活随笔</option>
-                    <option value="教程">开发教程</option>
-                </select>
-            </div>
-            <button class="primary-btn" onclick="handlePublish()">确认发布</button>
-        </div>
-    </div>
+<script>
+// 企业级编辑器模块
+const Editor = (() => {
+    const config = {
+        REPO: 'bwliubase/bwliubase.github.io',
+        BRANCH: 'main',
+        AUTO_SAVE_INTERVAL: 3000,
+        MAX_HISTORY: 50
+    };
 
-    <script>
-        // 专业级功能模块
-        const BlogSystem = {
-            config: {
-                REPO: 'bwliubase/bwliubase.github.io',
-                BRANCH: 'main',
-                POSTS_DIR: '_posts/',
-                ASSETS_DIR: 'assets/posts/'
-            },
+    let state = {
+        content: '',
+        history: [],
+        currentVersion: 0,
+        lastSaved: null,
+        draftId: null
+    };
 
-            init() {
-                this.loadDraft();
-                this.setupEditor();
-                this.setupAutoSave();
-                this.setupPreview();
-            },
+    return {
+        init() {
+            this.setupEditor();
+            this.setupAutoSave();
+            this.setupPreview();
+            this.loadDraft();
+        },
 
-            setupEditor() {
-                const editor = document.getElementById('editor');
-                editor.addEventListener('input', () => this.updatePreview());
-                document.addEventListener('keydown', e => {
-                    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                        e.preventDefault();
-                        this.saveDraft();
-                    }
-                });
-            },
+        setupEditor() {
+            const editor = document.getElementById('editor');
+            editor.addEventListener('input', debounce(this.handleInput, 300));
+            editor.addEventListener('keydown', this.handleKeyCommands);
+        },
 
-            async handlePublish() {
-                const title = document.getElementById('postTitle').value;
-                const content = this.buildPostContent(title);
-                
-                try {
-                    await this.githubCommit(
-                        `${this.config.POSTS_DIR}${this.generateFilename(title)}.md`,
-                        content,
-                        `发布文章: ${title}`
-                    );
-                    this.showStatus('发布成功', 'success');
-                    this.clearDraft();
-                } catch (error) {
-                    this.showStatus(`发布失败: ${error.message}`, 'error');
-                }
-            },
-
-            generateFilename(title) {
-                return `${new Date().toISOString().split('T')[0]}-${
-                    title.toLowerCase()
-                        .replace(/[^\w\u4e00-\u9fa5]/g, '-')
-                        .replace(/-+/g, '-')
-                        .slice(0, 50)
-                }`;
+        async publish() {
+            try {
+                await this.validateContent();
+                const postContent = this.generatePost();
+                await this.commitToGitHub(postContent);
+                this.clearDraft();
+                this.showSuccess('发布成功');
+            } catch (error) {
+                this.showError(`发布失败: ${error.message}`);
             }
-        };
+        },
 
-        // 初始化系统
-        window.onload = () => BlogSystem.init();
-    </script>
+        generatePost() {
+            return `---
+title: "${this.getTitle()}"
+date: "${new Date().toISOString()}"
+layout: post
+tags: [${this.extractTags()}]
+---
+
+${state.content}`;
+        },
+
+        getTitle() {
+            const titleMatch = state.content.match(/title: "(.*?)"/i);
+            return titleMatch?.[1] || '未命名文章';
+        },
+
+        extractTags() {
+            return [...new Set(state.content.match(/#(\w+)/g)]?.map(t => t.slice(1)) || [];
+        }
+    };
+})();
+
+// 初始化编辑器
+window.onload = () => Editor.init();
+</script>
 </body>
 </html>
