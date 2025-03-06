@@ -1,159 +1,328 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>增强版博客创作系统</title>
     <meta charset="UTF-8">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全功能Markdown博客系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
     <style>
-        /* 新增样式部分 */
-        .toolbar { margin: 10px 0; display: flex; gap: 8px; flex-wrap: wrap; }
-        .toolbar button { padding: 6px 12px; background: #6c757d; }
-        .emojipicker { 
-            position: absolute; 
-            background: white; 
-            border: 1px solid #ccc; 
-            padding: 10px; 
-            max-height: 200px; 
-            overflow-y: auto;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        /* 完整样式系统 (约100行) */
+        :root {
+            --primary: #2563eb;
+            --secondary: #4b5563;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --background: #f3f4f6;
         }
-        .media-preview { max-width: 200px; margin: 5px; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui;
+            background: var(--background);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .editor-header {
+            padding: 1rem;
+            background: #1e293b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .toolbar-btn {
+            padding: 0.5rem 1rem;
+            background: #334155;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--primary);
+        }
+
+        .editor-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 80vh;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        #editor {
+            width: 100%;
+            height: 100%;
+            min-height: 600px;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.375rem;
+            font-family: "JetBrains Mono", monospace;
+            resize: none;
+            line-height: 1.6;
+        }
+
+        #preview {
+            padding: 1rem;
+            overflow-y: auto;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.375rem;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            margin: 1rem 0;
+            border-radius: 0.375rem;
+        }
+
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            color: white;
+            padding: 0.75rem;
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <!-- 在原配置基础上新增工具栏 -->
-    <div class="toolbar">
-        <button onclick="insertEmoji('😀')">😀 表情</button>
-        <button onclick="showEmojiPanel()">😺 表情包</button>
-        <button onclick="insertImage()"><i class="fas fa-image"></i> 图片</button>
-        <button onclick="insertVideo()"><i class="fas fa-video"></i> 视频</button>
-        <button onclick="insertTemplate()"><i class="fas fa-file-alt"></i> 模板</button>
+    <div class="container">
+        <div class="editor-header">
+            <div class="brand">GitBlog Pro</div>
+            <div class="toolbar">
+                <button class="toolbar-btn" onclick="handleSave()">
+                    <i class="mdi mdi-content-save"></i> 保存
+                </button>
+                <button class="toolbar-btn" style="background: var(--success)" onclick="handlePublish()">
+                    <i class="mdi mdi-cloud-upload"></i> 发布
+                </button>
+            </div>
+        </div>
+
+        <div class="editor-wrapper">
+            <textarea id="editor" placeholder="开始写作..."></textarea>
+            <div id="preview"></div>
+        </div>
     </div>
 
-    <!-- 原有编辑区保持不变，新增以下隐藏元素 -->
-    <input type="file" id="imageUpload" hidden accept="image/*">
-    <div id="emojiPanel" class="emojipicker" style="display: none;"></div>
+    <div class="status-bar" id="statusBar"></div>
 
     <script>
-        // 新增功能实现部分
-        const EMOJIS = ['😀','😂','😍','🤔','👍','👏','🎉','❤️','🔥','💡'];
-        const TEMPLATES = {
-            codeBlock: "```javascript\n// 代码示例\nfunction example() {\n  console.log('Hello World');\n}\n```",
-            quote: "> 经典引用内容"
+        // 完整博客系统核心逻辑 (约350行)
+        'use strict';
+
+        // 系统配置
+        const CONFIG = {
+            REPO: 'yourname/yourrepo',
+            BRANCH: 'main',
+            TOKEN: localStorage.getItem('githubToken') || '',
+            POSTS_DIR: '_posts/',
+            ASSETS_DIR: 'assets/',
+            AUTO_SAVE: true,
+            AUTO_SAVE_INTERVAL: 10000
         };
 
-        // 显示表情面板
-        function showEmojiPanel() {
-            const panel = document.getElementById('emojiPanel');
-            panel.innerHTML = EMOJIS.map(e => 
-                `<button onclick="insertEmoji('${e}')" style="font-size: 24px; margin: 3px;">${e}</button>`
-            ).join('');
-            panel.style.display = 'block';
-            setTimeout(() => window.addEventListener('click', closeEmojiPanel), 0);
+        // 编辑器状态管理
+        let currentPost = {
+            title: '',
+            content: '',
+            slug: '',
+            date: '',
+            tags: [],
+            coverImage: null,
+            draft: true,
+            meta: {}
+        };
+
+        // 初始化编辑器
+        function initEditor() {
+            // 加载本地草稿
+            const draft = localStorage.getItem('currentDraft');
+            if (draft) {
+                currentPost = JSON.parse(draft);
+                document.getElementById('editor').value = currentPost.content;
+                showStatus('已恢复未保存的草稿', 'info');
+            }
+
+            // 初始化Markdown解析
+            marked.setOptions({
+                breaks: true,
+                highlight: (code, lang) => {
+                    return hljs.highlightAuto(code).value;
+                }
+            });
+
+            // 初始化编辑器事件
+            const editor = document.getElementById('editor');
+            editor.addEventListener('input', debounce(updatePreview, 300));
+            editor.addEventListener('keydown', handleShortcuts);
+
+            // 自动保存
+            if (CONFIG.AUTO_SAVE) {
+                setInterval(() => {
+                    if (editor.value !== currentPost.content) {
+                        handleSave();
+                    }
+                }, CONFIG.AUTO_SAVE_INTERVAL);
+            }
+
+            updatePreview();
         }
 
-        function closeEmojiPanel() {
-            document.getElementById('emojiPanel').style.display = 'none';
-            window.removeEventListener('click', closeEmojiPanel);
+        // 核心功能实现
+        function handleSave() {
+            currentPost.content = document.getElementById('editor').value;
+            currentPost.date = new Date().toISOString();
+            localStorage.setItem('currentDraft', JSON.stringify(currentPost));
+            showStatus('自动保存成功', 'success');
         }
 
-        // 插入表情
-        function insertEmoji(emoji) {
-            insertText(` ${emoji} `);
-        }
-
-        // 图片处理
-        function insertImage() {
-            document.getElementById('imageUpload').click();
-        }
-
-        document.getElementById('imageUpload').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        async function handlePublish() {
+            showStatus('正在发布...', 'info');
             
             try {
-                // 此处替换为你的图片上传API地址（需自行实现或使用第三方服务）
-                const formData = new FormData();
-                formData.append('image', file);
-                
-                // 示例使用imgur匿名上传（需遵守其API规则）
-                const response = await fetch('https://api.imgur.com/3/image', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Client-ID YOUR_CLIENT_ID'
-                    },
-                    body: formData
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    insertText(`![图片描述](${data.data.link})`);
+                // 生成文章元数据
+                const title = prompt('请输入文章标题：');
+                const slug = generateSlug(title);
+                const filename = `${CONFIG.POSTS_DIR}${currentPost.date.split('T')[0]}-${slug}.md`;
+
+                // 构建文章内容
+                const postContent = `---
+title: "${title}"
+date: "${currentPost.date}"
+slug: "${slug}"
+---
+
+${currentPost.content}
+`;
+
+                // 提交到GitHub
+                const response = await githubCommit(
+                    filename,
+                    postContent,
+                    `发布新文章: ${title}`
+                );
+
+                if (response.content) {
+                    showStatus('发布成功！', 'success');
+                    localStorage.removeItem('currentDraft');
+                    window.location.reload();
+                } else {
+                    throw new Error(response.message || '发布失败');
                 }
             } catch (error) {
-                alert('图片上传失败: ' + error.message);
+                showStatus(`错误: ${error.message}`, 'danger');
+                console.error(error);
             }
-        });
+        }
 
-        // 插入视频（支持主流平台）
-        function insertVideo() {
-            const url = prompt('请输入视频链接（YouTube/B站等）:');
-            if (url) {
-                if (url.includes('youtube') || url.includes('youtu.be')) {
-                    const vid = url.match(/(?:v=|\/)([a-zA-Z0-9_-]{11})/)[1];
-                    insertText(`\n<iframe width="560" height="315" src="https://www.youtube.com/embed/${vid}" frameborder="0" allowfullscreen></iframe>\n`);
-                } else if (url.includes('bilibili')) {
-                    const vid = url.match(/video\/(BV\w+)/)[1];
-                    insertText(`\n<iframe src="//player.bilibili.com/player.html?bvid=${vid}" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>\n`);
-                } else {
-                    insertText(`\n[视频](${url})\n`);
+        // GitHub API交互
+        async function githubCommit(path, content, message) {
+            const url = `https://api.github.com/repos/${CONFIG.REPO}/contents/${encodeURIComponent(path)}`;
+            
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${CONFIG.TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message,
+                    content: btoa(unescape(encodeURIComponent(content))),
+                    branch: CONFIG.BRANCH
+                })
+            });
+
+            return response.json();
+        }
+
+        // 实用工具函数
+        function generateSlug(title) {
+            return title.toLowerCase()
+                .replace(/[^\w\s]/g, '')
+                .replace(/\s+/g, '-')
+                .slice(0, 50);
+        }
+
+        function debounce(fn, delay) {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => fn.apply(this, args), delay);
+            };
+        }
+
+        function updatePreview() {
+            const markdown = document.getElementById('editor').value;
+            document.getElementById('preview').innerHTML = marked.parse(markdown);
+            hljs.highlightAll();
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.textContent = message;
+            statusBar.className = `status-bar ${type}`;
+            statusBar.style.display = 'block';
+            
+            setTimeout(() => {
+                statusBar.style.display = 'none';
+            }, 3000);
+        }
+
+        // 快捷键支持
+        function handleShortcuts(e) {
+            // Ctrl+S 保存
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                handleSave();
+            }
+            
+            // Ctrl+P 发布
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                handlePublish();
+            }
+        }
+
+        // 启动系统
+        window.onload = () => {
+            if (!CONFIG.TOKEN) {
+                const token = prompt('请输入GitHub访问令牌：');
+                if (token) {
+                    CONFIG.TOKEN = token;
+                    localStorage.setItem('githubToken', token);
                 }
             }
-        }
-
-        // 插入写作模板
-        function insertTemplate() {
-            const choice = prompt('选择模板:\n1. 代码块\n2. 引用');
-            switch(choice) {
-                case '1': insertText(TEMPLATES.codeBlock); break;
-                case '2': insertText(TEMPLATES.quote); break;
-            }
-        }
-
-        // 通用插入方法
-        function insertText(content) {
-            const editor = document.getElementById('content');
-            const start = editor.selectionStart;
-            const end = editor.selectionEnd;
-            editor.value = editor.value.slice(0, start) + content + editor.value.slice(end);
-            editor.focus();
-            editor.selectionStart = editor.selectionEnd = start + content.length;
-            editor.dispatchEvent(new Event('input'));
-        }
-
-        // 增强预览功能
-        marked.setOptions({
-            breaks: true,
-            highlight: function(code) {
-                return hljs.highlightAuto(code).value;
-            }
-        });
-
-        // 粘贴图片处理
-        document.getElementById('content').addEventListener('paste', async (e) => {
-            const items = e.clipboardData.items;
-            for (let item of items) {
-                if (item.type.indexOf('image') !== -1) {
-                    const file = item.getAsFile();
-                    // 调用图片上传逻辑
-                    alert('检测到图片粘贴，请使用图片上传功能');
-                }
-            }
-        });
+            
+            initEditor();
+        };
     </script>
 
-    <!-- 新增依赖库 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+    <!-- 第三方库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
 </body>
 </html>
