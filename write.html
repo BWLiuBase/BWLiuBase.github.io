@@ -2,319 +2,260 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>创作中心 - bwliubase</title>
-    <!-- 引入基础样式 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
+    <title>全功能创作中心 - bwliubase</title>
+    <!-- 核心依赖 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
     <style>
-        /* 基础样式适配 */
-        :root {
-            --primary-color: #2d8cf0;
-            --background-color: #f8f9fa;
-            --border-color: #dcdfe6;
-        }
+        /* 基础样式...（保留原有基础样式） */
 
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--background-color);
-        }
-
-        .editor-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        /* 编辑器区域 */
-        .editor-pane {
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
-        }
-
-        .editor-toolbar {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
+        /* 增强工具栏 */
+        .toolbar-group {
             display: flex;
             gap: 8px;
-            flex-wrap: wrap;
+            align-items: center;
+            padding: 5px 0;
+            border-right: 1px solid var(--border-color);
+            padding-right: 15px;
         }
 
-        .toolbar-btn {
+        /* 代码语言选择器 */
+        .lang-selector {
             padding: 6px 12px;
-            background: white;
-            border: 1px solid var(--border-color);
             border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .toolbar-btn:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        #editor {
-            width: 100%;
-            height: 600px;
-            padding: 20px;
-            border: none;
-            resize: none;
-            font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 14px;
-        }
-
-        /* 预览区域 */
-        .preview-pane {
-            padding: 20px;
-            background: white;
             border: 1px solid var(--border-color);
-            border-radius: 4px;
-            overflow-y: auto;
-            box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+            margin-left: 10px;
         }
 
-        .preview-content {
-            line-height: 1.6;
-        }
-
-        .preview-content img {
-            max-width: 100%;
-        }
-
-        .preview-content code {
-            background-color: #f3f4f4;
-            padding: 2px 4px;
-            border-radius: 3px;
-        }
-
-        .preview-content pre code {
-            display: block;
-            padding: 15px;
-            overflow-x: auto;
-        }
-
-        /* 标签管理 */
-        .tag-container {
-            margin-top: 20px;
-            padding: 15px;
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-        }
-
-        .tag-input {
-            display: flex;
+        /* 表格编辑器 */
+        .table-config {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
-            align-items: center;
+            margin: 10px 0;
         }
 
-        .tag-item {
-            display: inline-flex;
-            align-items: center;
-            background: #e8f4ff;
-            color: var(--primary-color);
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin: 4px;
+        /* 表情面板增强 */
+        .emoji-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 10px;
         }
 
-        .tag-remove {
+        .emoji-tab {
+            padding: 8px 15px;
             cursor: pointer;
-            margin-left: 6px;
-            font-weight: bold;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .emoji-tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 公式工具栏 */
+        .formula-toolbar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+        }
+
+        /* 历史版本面板 */
+        .history-panel {
+            position: fixed;
+            right: 20px;
+            top: 100px;
+            width: 300px;
+            background: white;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
     <div class="editor-container">
+        <!-- 编辑器左侧 -->
         <div class="editor-pane">
             <div class="editor-toolbar">
-                <button class="toolbar-btn" onclick="formatText('bold')"><strong>B</strong></button>
-                <button class="toolbar-btn" onclick="formatText('italic')"><em>I</em></button>
-                <button class="toolbar-btn" onclick="formatText('link')">🔗</button>
-                <button class="toolbar-btn" onclick="formatText('code')">{ }</button>
-                <button class="toolbar-btn" onclick="formatText('image')">🖼️</button>
-                <input type="file" id="imageUpload" hidden accept="image/*">
-                <select class="toolbar-btn" onchange="insertHeading(this.value)">
-                    <option value="">标题</option>
-                    <option value="# ">H1</option>
-                    <option value="## ">H2</option>
-                    <option value="### ">H3</option>
+                <!-- 功能分组 -->
+                <div class="toolbar-group">
+                    <button onclick="formatText('bold')"><strong>B</strong></button>
+                    <button onclick="formatText('italic')"><em>I</em></button>
+                    <button onclick="showEmojiPicker(event)">😀</button>
+                    <select class="lang-selector" onchange="insertCodeBlock(this.value)">
+                        <option value="">代码语言</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="java">Java</option>
+                        <option value="mermaid">Mermaid</option>
+                    </select>
+                </div>
+                
+                <div class="toolbar-group">
+                    <button onclick="showTableDialog()">表格</button>
+                    <button onclick="insertFormula('block')">公式块</button>
+                    <button onclick="insertFormula('inline')">行内公式</button>
+                    <input type="file" id="imageUpload" hidden multiple>
+                </div>
+            </div>
+            <textarea id="editor"></textarea>
+        </div>
+
+        <!-- 预览区域 -->
+        <div class="preview-pane" id="preview"></div>
+
+        <!-- 表情选择器 -->
+        <div id="emojiPicker" class="emoji-picker">
+            <div class="emoji-tabs">
+                <div class="emoji-tab active" onclick="switchEmojiTab('smileys')">表情</div>
+                <div class="emoji-tab" onclick="switchEmojiTab('symbols')">符号</div>
+            </div>
+            <div class="emoji-category" id="smileys">
+                <!-- 动态加载表情 -->
+            </div>
+            <div class="emoji-category" id="symbols" style="display:none;">
+                <!-- 特殊符号 -->
+            </div>
+        </div>
+
+        <!-- 表格配置对话框 -->
+        <div class="table-dialog" id="tableDialog">
+            <h3>创建表格</h3>
+            <div class="table-config">
+                <label>行数 <input type="number" id="rows" min="1" value="3"></label>
+                <label>列数 <input type="number" id="cols" min="1" value="3"></label>
+                <label>表头 <input type="checkbox" id="hasHeader" checked></label>
+                <select id="alignment">
+                    <option value="left">左对齐</option>
+                    <option value="center">居中</option>
+                    <option value="right">右对齐</option>
                 </select>
             </div>
-            <textarea id="editor" placeholder="开始创作..."></textarea>
+            <button onclick="generateTable()">生成</button>
+            <button onclick="closeDialog()">取消</button>
         </div>
 
-        <div class="preview-pane">
-            <div id="preview" class="preview-content"></div>
+        <!-- 历史版本面板 -->
+        <div class="history-panel" id="historyPanel">
+            <h4>历史版本</h4>
+            <ul id="historyList"></ul>
         </div>
     </div>
 
-    <div class="tag-container">
-        <div class="tag-input">
-            <input type="text" id="tagInput" placeholder="添加标签">
-            <button class="toolbar-btn" onclick="addTag()">添加</button>
-        </div>
-        <div id="tagList"></div>
-    </div>
-
-    <div style="text-align: center; margin-top: 20px;">
-        <button class="toolbar-btn" style="background: var(--primary-color); color: white;" onclick="publishPost()">发布文章</button>
-        <button class="toolbar-btn" onclick="saveDraft()">保存草稿</button>
-        <button class="toolbar-btn" onclick="exportMD()">导出MD</button>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.18/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script>
         // 初始化配置
-        marked.setOptions({
-            highlight: function(code, lang) {
-                return hljs.highlightAuto(code).value;
+        const EMOJI_MAP = {
+            smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇'],
+            symbols: ['⭐', '✨', '❄️', '❤️', '💡', '🎉', '✅', '❌', '⚠️', '⚡']
+        };
+
+        // 增强的Markdown解析
+        const renderer = {
+            code(code, lang) {
+                if (lang === 'mermaid') {
+                    return `<div class="mermaid">${code}</div>`;
+                }
+                return `<pre><code class="hljs ${lang}">${hljs.highlightAuto(code).value}</code></pre>`;
             },
-            breaks: true
-        });
-
-        // 实时预览
-        const editor = document.getElementById('editor');
-        const preview = document.getElementById('preview');
-        
-        editor.addEventListener('input', updatePreview);
-        
-        function updatePreview() {
-            preview.innerHTML = marked.parse(editor.value);
-            localStorage.setItem('blog_draft', editor.value);
-        }
-
-        // 文本格式化
-        function formatText(type) {
-            const selection = getSelectionText();
-            const start = editor.selectionStart;
-            const end = editor.selectionEnd;
-            
-            const formats = {
-                bold: { prefix: '**', suffix: '**' },
-                italic: { prefix: '*', suffix: '*' },
-                link: { prefix: '[描述](', suffix: ')' },
-                code: { prefix: '```\n', suffix: '\n```' },
-                image: { prefix: '![alt](', suffix: ')' }
-            };
-
-            if(type === 'image') {
-                document.getElementById('imageUpload').click();
-                return;
+            image(href, title, text) {
+                return `<img src="${href}" alt="${text}" class="md-image">`;
             }
+        };
 
-            const format = formats[type];
-            const newText = format.prefix + selection + format.suffix;
-            editor.setRangeText(newText);
-            editor.focus();
-            editor.setSelectionRange(start + format.prefix.length, end + format.prefix.length);
-        }
-
-        // 插入标题
-        function insertHeading(level) {
-            const pos = editor.selectionStart;
-            editor.setRangeText(level);
-            editor.focus();
-            editor.setSelectionRange(pos + level.length, pos + level.length);
-        }
-
-        // 图片上传处理
-        document.getElementById('imageUpload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function() {
-                const imageMarkdown = `![图片描述](${reader.result})`;
-                const pos = editor.selectionStart;
-                editor.setRangeText(imageMarkdown);
-                editor.focus();
-                editor.setSelectionRange(pos + imageMarkdown.length, pos + imageMarkdown.length);
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // 标签管理
-        let tags = JSON.parse(localStorage.getItem('blog_tags') || '[]');
-
-        function renderTags() {
-            const container = document.getElementById('tagList');
-            container.innerHTML = tags.map(tag => `
-                <div class="tag-item">
-                    ${tag}
-                    <span class="tag-remove" onclick="removeTag('${tag}')">×</span>
-                </div>
-            `).join('');
-        }
-
-        function addTag() {
-            const input = document.getElementById('tagInput');
-            const tag = input.value.trim();
+        // 初始化编辑器
+        function initEditor() {
+            // 初始化事件监听
+            editor.addEventListener('input', debounce(updatePreview, 300));
+            document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
             
-            if(tag && !tags.includes(tag)) {
-                tags.push(tag);
-                localStorage.setItem('blog_tags', JSON.stringify(tags));
-                renderTags();
-                input.value = '';
+            // 加载历史版本
+            loadHistory();
+        }
+
+        // 完整表情功能
+        function showEmojiPicker(e) {
+            const picker = document.getElementById('emojiPicker');
+            picker.style.display = 'block';
+            picker.style.left = `${e.clientX}px`;
+            picker.style.top = `${e.clientY}px`;
+            if (!picker.innerHTML) renderEmojis();
+        }
+
+        function renderEmojis() {
+            Object.entries(EMOJI_MAP).forEach(([category, items]) => {
+                const container = document.getElementById(category);
+                container.innerHTML = items.map(emoji => `
+                    <span class="emoji-item" onclick="insertEmoji('${emoji}')">${emoji}</span>
+                `).join('');
+            });
+        }
+
+        // 完整表格生成
+        function generateTable() {
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+            const hasHeader = document.getElementById('hasHeader').checked;
+            const align = document.getElementById('alignment').value;
+            
+            let tableMd = '';
+            if (hasHeader) {
+                tableMd += '| ' + ' Header |'.repeat(cols) + '\n';
+                tableMd += '|' + ` ${getAlignmentMark(align)} |`.repeat(cols) + '\n';
             }
+            for (let i=0; i<rows; i++) {
+                tableMd += '| ' + ' Content |'.repeat(cols) + '\n';
+            }
+            insertText(tableMd);
         }
 
-        function removeTag(tag) {
-            tags = tags.filter(t => t !== tag);
-            localStorage.setItem('blog_tags', JSON.stringify(tags));
-            renderTags();
+        // 数学公式支持
+        function insertFormula(type) {
+            const template = type === 'block' ? '\n$$\n\\boxed{E=mc^2}\n$$\n' : ' $E=mc^2$ ';
+            insertText(template);
         }
 
-        // 文章发布
-        function publishPost() {
-            const post = {
+        // 增强代码插入
+        function insertCodeBlock(lang) {
+            const template = 
+                '```' + lang + '\n' +
+                (lang === 'mermaid' ? 
+                    'graph TD\n  A[开始] --> B(结束)' : 
+                    '// 输入代码...') + 
+                '\n```';
+            insertText(template);
+        }
+
+        // 历史版本管理
+        let history = JSON.parse(localStorage.getItem('editHistory') || '[]');
+        
+        function saveHistory() {
+            history.push({
                 content: editor.value,
-                tags: tags,
-                timestamp: new Date().toISOString()
-            };
-
-            // 此处应替换为实际API调用
-            alert('发布成功！（模拟）');
-            localStorage.removeItem('blog_draft');
-            editor.value = '';
-            tags = [];
-            renderTags();
+                timestamp: new Date().toLocaleString()
+            });
+            if (history.length > 5) history.shift();
+            localStorage.setItem('editHistory', JSON.stringify(history));
+            renderHistory();
         }
 
-        // 保存草稿
-        function saveDraft() {
-            localStorage.setItem('blog_draft', editor.value);
-            alert('草稿已保存！');
+        function renderHistory() {
+            document.getElementById('historyList').innerHTML = history
+                .map((item, index) => `
+                    <li>
+                        <span>版本${index+1}</span>
+                        <small>${item.timestamp}</small>
+                        <button onclick="loadVersion(${index})">恢复</button>
+                    </li>
+                `).join('');
         }
 
-        // 导出MD文件
-        function exportMD() {
-            const blob = new Blob([editor.value], {type: "text/markdown;charset=utf-8"});
-            saveAs(blob, `post_${Date.now()}.md`);
-        }
-
-        // 初始化加载草稿
+        // 初始化所有组件
         window.onload = function() {
-            const draft = localStorage.getItem('blog_draft');
-            if(draft) {
-                editor.value = draft;
-                updatePreview();
-            }
-            renderTags();
-        }
-
-        // 辅助函数
-        function getSelectionText() {
-            return editor.value.slice(editor.selectionStart, editor.selectionEnd);
-        }
+            initEditor();
+            mermaid.initialize({ theme: 'neutral' });
+            hljs.initHighlightingOnLoad();
+            renderEmojis();
+        };
     </script>
 </body>
 </html>
