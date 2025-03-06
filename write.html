@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>写作界面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-top: 10px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>写作界面</h1>
+        <form id="write-form">
+            <label for="title">标题：</label>
+            <input type="text" id="title" name="title" required><br><br>
+            
+            <label for="content">内容：</label>
+            <textarea id="content" name="content" rows="10" cols="50" required></textarea><br><br>
+            
+            <button type="submit">保存</button>
+        </form>
+    </div>
+
+    <!-- 嵌入 JavaScript -->
+    <script>
+        document.getElementById('write-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // 阻止表单默认提交行为
+
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+
+            // 显示一个简单的弹窗，展示输入的内容
+            alert(`标题: ${title}\n内容: ${content}`);
+            
+            // 如果需要，可以将数据保存到本地存储或发送到后端
+            localStorage.setItem('postTitle', title);
+            localStorage.setItem('postContent', content);
+
+            console.log('文章已保存到本地存储！');
+        });
+    </script>
+</body>
+</html>
