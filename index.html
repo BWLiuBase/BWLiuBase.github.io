@@ -62,451 +62,453 @@
       </path>
      </svg>
     </div>
-    <div class="loading-word" id="wen1">
+    <div class="loading-word">
      魔法少女正在为您召唤网页...
     </div>
-    <script>
-     var time=null,startLoading=()=>{time=Date.now(),document.getElementById("loader").classList.remove("loading")},endLoading=()=>{time?500<Date.now()-time?(time=null,document.body.style.overflow="auto",document.getElementById("loader").classList.add("loading")):(setTimeout(endLoading,500-(Date.now()-time)),time=null):(document.body.style.overflow="auto",document.getElementById("loader").classList.add("loading"))};window.addEventListener("DOMContentLoaded",endLoading),document.getElementById("loader").addEventListener("click",endLoading)
-    </script>
-    <div id="copy-tooltip" style="pointer-events:none;opacity:0;transition:all .2s ease;position:fixed;top:50%;left:50%;z-index:999;transform:translate(-50%,-50%);color:#fff;background:rgba(0,0,0,.5);padding:10px 15px;border-radius:10px">
-    </div>
-    <div id="container">
-     <div id="wrap">
-      <div id="header-nav">
-       <nav id="main-nav">
-        <span class="main-nav-link-wrap">
-         <a href="/">
-          <img alt="a图标" src="/images/a.ico"/>
-         </a>
-         <a class="main-nav-link" href="/" id="wen2">
-          首页
-         </a>
+   </div>
+  </div>
+  <script>
+   var time=null,startLoading=()=>{time=Date.now(),document.getElementById("loader").classList.remove("loading")},endLoading=()=>{time?500<Date.now()-time?(time=null,document.body.style.overflow="auto",document.getElementById("loader").classList.add("loading")):(setTimeout(endLoading,500-(Date.now()-time)),time=null):(document.body.style.overflow="auto",document.getElementById("loader").classList.add("loading"))};window.addEventListener("DOMContentLoaded",endLoading),document.getElementById("loader").addEventListener("click",endLoading)
+  </script>
+  <div id="copy-tooltip" style="pointer-events:none;opacity:0;transition:all .2s ease;position:fixed;top:50%;left:50%;z-index:999;transform:translate(-50%,-50%);color:#fff;background:rgba(0,0,0,.5);padding:10px 15px;border-radius:10px">
+  </div>
+  <div id="container">
+   <div id="wrap">
+    <div id="header-nav">
+     <nav id="main-nav">
+      <span class="main-nav-link-wrap">
+       <a href="/">
+        <img alt="a图标" src="/images/a.ico"/>
+       </a>
+       <a class="main-nav-link" href="/" id="text-a">
+        首页
+       </a>
+      </span>
+      <span class="main-nav-link-wrap">
+       <a href="/idea">
+        <img alt="b图标" src="/images/b.ico"/>
+       </a>
+       <a class="main-nav-link" href="/idea" id="text-b">
+        想法BLOG
+       </a>
+      </span>
+      <span class="main-nav-link-wrap">
+       <a href="/record">
+        <img alt="c图标" src="/images/c.ico"/>
+       </a>
+       <a class="main-nav-link" href="/record" id="text-c">
+        记录生活
+       </a>
+      </span>
+      <span class="main-nav-link-wrap">
+       <a href="/game">
+        <img alt="d图标" src="/images/d.ico"/>
+       </a>
+       <a class="main-nav-link" href="/game" id="text-d">
+        内置小游戏
+       </a>
+      </span>
+      <a class="nav-icon" id="main-nav-toggle">
+      </a>
+     </nav>
+     <nav id="sub-nav">
+      <a class="nav-icon popup-trigger" id="nav-search-btn" title="搜索">
+      </a>
+     </nav>
+     <nav id="i18n-nav">
+      <div class="custom-dropdown">
+       <div class="select-selected" id="select-selected">
+        <span class="nav-icon" id="nav-language-btn" style="padding:0 20px 0 0">
         </span>
-        <span class="main-nav-link-wrap">
-         <a href="/idea">
-          <img alt="b图标" src="/images/b.ico"/>
-         </a>
-         <a class="main-nav-link" href="/idea" id="wen3">
-          想法BLOG
-         </a>
+        <span id="selected-lang">
+         简体中文
         </span>
-        <span class="main-nav-link-wrap">
-         <a href="/record">
-          <img alt="c图标" src="/images/c.ico"/>
-         </a>
-         <a class="main-nav-link" href="/record" id="wen4">
-          记录生活
-         </a>
-        </span>
-        <span class="main-nav-link-wrap">
-         <a href="/game">
-          <img alt="d图标" src="/images/d.ico"/>
-         </a>
-         <a class="main-nav-link" href="/game" id="wen5">
-          内置小游戏
-         </a>
-        </span>
-        <a class="nav-icon" id="main-nav-toggle">
-        </a>
-       </nav>
-       <nav id="sub-nav">
-        <a class="nav-icon popup-trigger" id="nav-search-btn" title="搜索">
-        </a>
-       </nav>
-       <nav id="i18n-nav">
-        <div class="custom-dropdown">
-         <div class="select-selected" id="select-selected">
-          <span class="nav-icon" id="nav-language-btn" style="padding:0 20px 0 0">
-          </span>
-          <span id="selected-lang">
-           简体中文
-          </span>
-         </div>
-         <ul class="select-items" id="select-items">
-          <li class="selected" data-value="zh-CN" id="wen6">
-           简体中文
-          </li>
-          <li data-value="en">
-           English
-          </li>
-         </ul>
-        </div>
-       </nav>
-      </div>
-      <header id="header">
-       <picture>
-        <source media="(max-width: 479px)" srcset="/images/banner-600w.webp"/>
-        <source media="(max-width: 799px)" srcset="/images/banner-800w.webp"/>
-        <source media="(min-width: 800px)" srcset="/images/banner.webp"/>
-        <img alt="友情链接" fetchpriority="high" src="/images/banner.webp"/>
-       </picture>
-       <img alt="友情链接" src="" style="visibility:hidden"/>
-       <div id="header-outer">
-        <div id="header-title">
-         <a href="/" id="logo">
-          <h1 data-aos="slide-up" id="wen7" margin-top="60px">
-           欢迎来访BW Liuの小站
-          </h1>
-         </a>
-         <h2 data-aos="slide-down" id="subtitle-wrap">
-          <a href="/" id="subtitle">
-           生活晴朗，万事可爱！
-          </a>
-         </h2>
-        </div>
        </div>
-      </header>
-      <div class="sidebar-left" id="content">
-       <aside id="sidebar">
-        <meting-js id="2265921590" list-folded="true" order="random" server="netease" theme="var(--color-link)" type="playlist">
-        </meting-js>
-        <div class="sidebar-wrapper">
-         <div class="sidebar-wrap" data-aos="fade-up">
-          <div class="sidebar-author">
-           <img alt="BW Liu" class="lazyload" data-sizes="auto" data-src="/avatar/avatar.webp"/>
-           <div class="sidebar-author-name">
-            BW Liu
-           </div>
-           <div class="sidebar-description" id="wen8">
-            BW Liu的个人网站
-           </div>
-          </div>
-          <div class="sidebar-state">
-           <div class="sidebar-state-article">
-            <div id="wen9">
-             文章
-            </div>
-            <div class="sidebar-state-number">
-             0
-            </div>
-           </div>
-           <div class="sidebar-state-category">
-            <div id="wen10">
-             分类
-            </div>
-            <div class="sidebar-state-number">
-             0
-            </div>
-           </div>
-           <div class="sidebar-state-tag">
-            <div id="wen11">
-             标签
-            </div>
-            <div class="sidebar-state-number">
-             0
-            </div>
-           </div>
-          </div>
-          <div class="sidebar-social">
-           <div class="icon-qq sidebar-social-icon">
-            <a aria-label="QQ" href="../images/QQ.jpg" rel="noopener external nofollow noreferrer" target="_blank">
-            </a>
-           </div>
-           <div class="icon-weixin sidebar-social-icon">
-            <a aria-label="微信" href="../images/WX.jpg" rel="noopener external nofollow noreferrer" target="_blank">
-            </a>
-           </div>
-           <div class="icon-bilibili sidebar-social-icon">
-            <a aria-label="bilibili" href="" itemprop="url" rel="noopener external nofollow noreferrer" target="_blank">
-            </a>
-           </div>
-          </div>
-          <div class="sidebar-menu">
-           <div class="sidebar-menu-link-wrap">
-            <a aria-label="" class="sidebar-menu-link-dummy" href="/" id="text-a">
-            </a>
-            <a href="/">
-             <img alt="a图标" src="/images/a.ico"/>
-            </a>
-            <div class="sidebar-menu-link" id="text-a1">
-             首页
-            </div>
-           </div>
-           <div class="sidebar-menu-link-wrap">
-            <a aria-label="想法BLOG" class="sidebar-menu-link-dummy" href="/idea">
-            </a>
-            <a href="idea">
-             <img alt="b图标" src="/images/b.ico"/>
-            </a>
-            <div class="sidebar-menu-link" id="text-b1">
-             想法BLOG
-            </div>
-           </div>
-           <div class="sidebar-menu-link-wrap">
-            <a aria-label="记录生活" class="sidebar-menu-link-dummy" href="/record">
-            </a>
-            <a href="record">
-             <img alt="c图标" src="/images/c.ico"/>
-            </a>
-            <div class="sidebar-menu-link" id="text-c1">
-             记录生活
-            </div>
-           </div>
-           <div class="sidebar-menu-link-wrap">
-            <a aria-label="内置小游戏" class="sidebar-menu-link-dummy" href="/game">
-            </a>
-            <a href="game">
-             <img alt="d图标" src="/images/d.ico"/>
-            </a>
-            <div class="sidebar-menu-link" id="text-d1">
-             内置小游戏
-            </div>
-           </div>
-          </div>
-         </div>
-        </div>
-        <div class="sidebar-widget">
-         <div class="widget-wrapper">
-          <div class="widget-wrap" data-aos="fade-up">
-           <h3 class="widget-title" id="wen12">
-            标签云
-           </h3>
-           <div class="widget tagcloud">
-            <a href="" style="font-size:12px">
-             Minecraft
-            </a>
-           </div>
-          </div>
-         </div>
-        </div>
-       </aside>
-       <section id="main">
-        <div class="post-categories-wrapper" data-aos="fade-up">
-         <div class="post-categories-wrap">
-          <a aria-label="" class="post-link" href="idea">
-          </a>
-          <div class="post-categories-cover">
-           <img alt="分类1" class="lazyload" data-sizes="auto" data-src="tub/tub1.webp"/>
-           <h2 id="wen13">
-            分类：想法BLOG
-           </h2>
-           <h3 id="wen14">
-            0 篇内容
-           </h3>
-          </div>
-         </div>
-         <div class="post-categories-wrap">
-          <a aria-label="" class="post-link" href="record">
-          </a>
-          <div class="post-categories-cover">
-           <img alt="分类2" class="lazyload" data-sizes="auto" data-src="tub/tub2.webp"/>
-           <h2 id="wen15">
-            分类：记录生活
-           </h2>
-           <h3 id="wen16">
-            0 篇内容
-           </h3>
-          </div>
-         </div>
-        </div>
-        <article class="h-entry article article-type-page" id="page-" itemprop="blogPost" itemscope="" itemtype="https://schema.org/BlogPosting">
-         <div class="article-inner" data-aos="fade-up">
-          <div class="article-meta">
-           <div class="article-date">
-            <span class="article-date-link" data-aos="zoom-in">
-             <time datetime="2025-03-01T13:03:02.294Z" itemprop="datePublished">
-              2025-03-01
-             </time>
-             <time id="post-update-time" style="display:none">
-              2025-03-01
-             </time>
-            </span>
-           </div>
-          </div>
-          <div class="hr-line">
-          </div>
-          <div class="e-content article-entry" itemprop="articleBody">
-           <h2 id="本站信息">
-            <a class="markdownIt-Anchor" href="#本站信息">
-            </a>
-            本站信息
-           </h2>
-           <ul>
-            <li id="wen17">
-             站名： BW Liu's website
-            </li>
-            <li id="wen18">
-             站长： BW Liu
-            </li>
-            <li id="wen19">
-             地址：
-             <a href="https://BWLiuBase.github.io/">
-              https://BWLiuBase.github.io/
-             </a>
-            </li>
-            <footer class="article-footer">
-             <a class="article-comment-link" data-aos="zoom-in" href="/index.html#comments" id="wen20">
-              <span class="post-comments-count waline-comment-count" data-path="/index.html" itemprop="commentCount">
-              </span>
-              留言
-             </a>
-             <span class="article-visitor-link" data-aos="zoom-in">
-              <span class="waline-pageview-count" data-path="/">
-               0
-              </span>
-              <em class="post-meta-item-text" id="wen21">
-               阅读量
-              </em>
-             </span>
-            </footer>
-           </ul>
-          </div>
-         </div>
-        </article>
-        <div class="wcomment" data-aos="fade-up" id="comments">
-        </div>
-       </section>
-      </div>
-      <footer id="footer">
-       <div style="width:100%;overflow:hidden">
-        <div class="footer-line">
-        </div>
-       </div>
-       <div id="footer-info">
-        <div>
-         <span class="icon-copyright">
-         </span>
-         2025.03.01
-         <span class="footer-info-sep rotate">
-         </span>
-         BW Liu
-        </div>
-        <div>
-         QQ：
-         <a href="/images/QQ.jpg" rel="noopener external nofollow noreferrer" target="_blank">
-          3511513463
-         </a>
-        </div>
-        <div>
-         phone：
-         <a href="/images/WX.jpg" rel="noopener external nofollow noreferrer" target="_blank">
-          15903627258
-         </a>
-        </div>
-        <div>
-         <span class="icon-eye">
-         </span>
-         <span id="busuanzi_container_site_pv">
-          总访问量
-          <span id="busuanzi_value_site_pv">
-          </span>
-         </span>
-         |
-         <span class="icon-user">
-         </span>
-         <span id="busuanzi_container_site_uv">
-          总访客量
-          <span id="busuanzi_value_site_uv">
-          </span>
-         </span>
-        </div>
-       </div>
-      </footer>
-      <div class="sidebar-top">
-       <div class="sidebar-top-taichi rotate">
-       </div>
-       <div class="arrow-up">
-       </div>
-      </div>
-      <div class="hide" id="mask">
-      </div>
-     </div>
-     <nav id="mobile-nav">
-      <div class="sidebar-wrap">
-       <div class="sidebar-author">
-        <img alt="BW Liu" class="lazyload" data-sizes="auto" data-src="/avatar/avatar.webp"/>
-        <div class="sidebar-author-name">
-         BW Liu
-        </div>
-        <div class="sidebar-description">
-         BW Liu's website
-        </div>
-       </div>
-       <div class="sidebar-state">
-        <div class="sidebar-state-article">
-         <div id="wen22">
-          文章
-         </div>
-         <div class="sidebar-state-number">
-          0
-         </div>
-        </div>
-        <div class="sidebar-state-category">
-         <div id="wen23">
-          分类
-         </div>
-         <div class="sidebar-state-number">
-          0
-         </div>
-        </div>
-        <div class="sidebar-state-tag">
-         <div id="wen24">
-          标签
-         </div>
-         <div class="sidebar-state-number">
-          0
-         </div>
-        </div>
-       </div>
-       <div class="sidebar-social">
-        <div class="icon-qq sidebar-social-icon">
-         <a aria-label="QQ" href="../images/QQ.jpg" rel="noopener external nofollow noreferrer" target="_blank">
-         </a>
-        </div>
-        <div class="icon-weixin sidebar-social-icon">
-         <a aria-label="微信" href="../images/WX.jpg" rel="noopener external nofollow noreferrer" target="_blank">
-         </a>
-        </div>
-        <div class="icon-bilibili sidebar-social-icon">
-         <a aria-label="bilibili" href="" itemprop="url" rel="noopener external nofollow noreferrer" target="_blank">
-         </a>
-        </div>
-       </div>
-       <div class="sidebar-menu">
-        <div class="sidebar-menu-link-wrap">
-         <a aria-label="首页" class="sidebar-menu-link-dummy" href="/">
-         </a>
-         <a href="/">
-          <img alt="a图标" src="/images/a.ico"/>
-         </a>
-         <div class="sidebar-menu-link" id="text-a2">
-          首页
-         </div>
-        </div>
-        <div class="sidebar-menu-link-wrap">
-         <a aria-label="想法BLOG" class="sidebar-menu-link-dummy" href="/idea">
-         </a>
-         <a href="idea">
-          <img alt="b图标" src="/images/b.ico"/>
-         </a>
-         <div class="sidebar-menu-link" id="text-b2">
-          想法BLOG
-         </div>
-        </div>
-        <div class="sidebar-menu-link-wrap">
-         <a aria-label="记录生活" class="sidebar-menu-link-dummy" href="/record">
-         </a>
-         <a href="record">
-          <img alt="c图标" src="/images/c.ico"/>
-         </a>
-         <div class="sidebar-menu-link" id="text-c2">
-          记录生活
-         </div>
-        </div>
-        <div class="sidebar-menu-link-wrap">
-         <a aria-label="内置小游戏" class="sidebar-menu-link-dummy" href="/game">
-         </a>
-         <a href="game">
-          <img alt="d图标" src="/images/d.ico"/>
-         </a>
-         <div class="sidebar-menu-link" id="text-d2">
-          内置小游戏
-         </div>
-        </div>
-       </div>
+       <ul class="select-items" id="select-items">
+        <li class="selected" data-value="zh-CN">
+         简体中文
+        </li>
+        <li data-value="en">
+         English
+        </li>
+       </ul>
       </div>
      </nav>
     </div>
+    <header id="header">
+     <picture>
+      <source media="(max-width: 479px)" srcset="/images/banner-600w.webp"/>
+      <source media="(max-width: 799px)" srcset="/images/banner-800w.webp"/>
+      <source media="(min-width: 800px)" srcset="/images/banner.webp"/>
+      <img alt="友情链接" fetchpriority="high" src="/images/banner.webp"/>
+     </picture>
+     <img alt="友情链接" src="" style="visibility:hidden"/>
+     <div id="header-outer">
+      <div id="header-title">
+       <a href="/" id="logo">
+        <h1 data-aos="slide-up" margin-top="60px">
+         欢迎来访BW Liuの小站
+        </h1>
+       </a>
+       <h2 data-aos="slide-down" id="subtitle-wrap">
+        <a href="/" id="subtitle">
+         生活晴朗，万事可爱！
+        </a>
+       </h2>
+      </div>
+     </div>
+    </header>
+    <div class="sidebar-left" id="content">
+     <aside id="sidebar">
+      <meting-js id="2265921590" list-folded="true" order="random" server="netease" theme="var(--color-link)" type="playlist">
+      </meting-js>
+      <div class="sidebar-wrapper">
+       <div class="sidebar-wrap" data-aos="fade-up">
+        <div class="sidebar-author">
+         <img alt="BW Liu" class="lazyload" data-sizes="auto" data-src="/avatar/avatar.webp"/>
+         <div class="sidebar-author-name">
+          BW Liu
+         </div>
+         <div class="sidebar-description" id="text-e">
+          BW Liu的个人网站
+         </div>
+        </div>
+        <div class="sidebar-state">
+         <div class="sidebar-state-article">
+          <div>
+           文章
+          </div>
+          <div class="sidebar-state-number">
+           0
+          </div>
+         </div>
+         <div class="sidebar-state-category">
+          <div>
+           分类
+          </div>
+          <div class="sidebar-state-number">
+           0
+          </div>
+         </div>
+         <div class="sidebar-state-tag">
+          <div>
+           标签
+          </div>
+          <div class="sidebar-state-number">
+           0
+          </div>
+         </div>
+        </div>
+        <div class="sidebar-social">
+         <div class="icon-qq sidebar-social-icon">
+          <a aria-label="QQ" href="../images/QQ.jpg" rel="noopener external nofollow noreferrer" target="_blank">
+          </a>
+         </div>
+         <div class="icon-weixin sidebar-social-icon">
+          <a aria-label="微信" href="../images/WX.jpg" rel="noopener external nofollow noreferrer" target="_blank">
+          </a>
+         </div>
+         <div class="icon-bilibili sidebar-social-icon">
+          <a aria-label="bilibili" href="" itemprop="url" rel="noopener external nofollow noreferrer" target="_blank">
+          </a>
+         </div>
+        </div>
+        <div class="sidebar-menu">
+         <div class="sidebar-menu-link-wrap">
+          <a aria-label="" class="sidebar-menu-link-dummy" href="/" id="text-a">
+          </a>
+          <a href="/">
+           <img alt="a图标" src="/images/a.ico"/>
+          </a>
+          <div class="sidebar-menu-link" id="text-a1">
+           首页
+          </div>
+         </div>
+         <div class="sidebar-menu-link-wrap">
+          <a aria-label="想法BLOG" class="sidebar-menu-link-dummy" href="/idea">
+          </a>
+          <a href="idea">
+           <img alt="b图标" src="/images/b.ico"/>
+          </a>
+          <div class="sidebar-menu-link" id="text-b1">
+           想法BLOG
+          </div>
+         </div>
+         <div class="sidebar-menu-link-wrap">
+          <a aria-label="记录生活" class="sidebar-menu-link-dummy" href="/record">
+          </a>
+          <a href="record">
+           <img alt="c图标" src="/images/c.ico"/>
+          </a>
+          <div class="sidebar-menu-link" id="text-c1">
+           记录生活
+          </div>
+         </div>
+         <div class="sidebar-menu-link-wrap">
+          <a aria-label="内置小游戏" class="sidebar-menu-link-dummy" href="/game">
+          </a>
+          <a href="game">
+           <img alt="d图标" src="/images/d.ico"/>
+          </a>
+          <div class="sidebar-menu-link" id="text-d1">
+           内置小游戏
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="sidebar-widget">
+       <div class="widget-wrapper">
+        <div class="widget-wrap" data-aos="fade-up">
+         <h3 class="widget-title" id="text-i">
+          标签云
+         </h3>
+         <div class="widget tagcloud">
+          <a href="" style="font-size:12px">
+           Minecraft
+          </a>
+         </div>
+        </div>
+       </div>
+      </div>
+     </aside>
+     <section id="main">
+      <div class="post-categories-wrapper" data-aos="fade-up">
+       <div class="post-categories-wrap">
+        <a aria-label="" class="post-link" href="idea">
+        </a>
+        <div class="post-categories-cover">
+         <img alt="分类1" class="lazyload" data-sizes="auto" data-src="tub/tub1.webp"/>
+         <h2 id="text-j">
+          分类：想法BLOG
+         </h2>
+         <h3 id="text-l">
+          0 篇内容
+         </h3>
+        </div>
+       </div>
+       <div class="post-categories-wrap">
+        <a aria-label="" class="post-link" href="record">
+        </a>
+        <div class="post-categories-cover">
+         <img alt="分类2" class="lazyload" data-sizes="auto" data-src="tub/tub2.webp"/>
+         <h2 id="text-k">
+          分类：记录生活
+         </h2>
+         <h3 id="text-l">
+          0 篇内容
+         </h3>
+        </div>
+       </div>
+      </div>
+      <article class="h-entry article article-type-page" id="page-" itemprop="blogPost" itemscope="" itemtype="https://schema.org/BlogPosting">
+       <div class="article-inner" data-aos="fade-up">
+        <div class="article-meta">
+         <div class="article-date">
+          <span class="article-date-link" data-aos="zoom-in">
+           <time datetime="2025-03-01T13:03:02.294Z" itemprop="datePublished">
+            2025-03-01
+           </time>
+           <time id="post-update-time" style="display:none">
+            2025-03-01
+           </time>
+          </span>
+         </div>
+        </div>
+        <div class="hr-line">
+        </div>
+        <div class="e-content article-entry" itemprop="articleBody">
+         <h2 id="本站信息">
+          <a class="markdownIt-Anchor" href="#本站信息">
+          </a>
+          本站信息
+         </h2>
+         <ul>
+          <li>
+           站名： BW Liu's website
+          </li>
+          <li>
+           站长： BW Liu
+          </li>
+          <li>
+           地址：
+           <a href="https://BWLiuBase.github.io/">
+            https://BWLiuBase.github.io/
+           </a>
+          </li>
+          <footer class="article-footer">
+           <a class="article-comment-link" data-aos="zoom-in" href="/index.html#comments">
+            <span class="post-comments-count waline-comment-count" data-path="/index.html" itemprop="commentCount">
+            </span>
+            留言
+           </a>
+           <span class="article-visitor-link" data-aos="zoom-in">
+            <span class="waline-pageview-count" data-path="/">
+             0
+            </span>
+            <em class="post-meta-item-text">
+             阅读量
+            </em>
+           </span>
+          </footer>
+         </ul>
+        </div>
+       </div>
+      </article>
+      <div class="wcomment" data-aos="fade-up" id="comments">
+      </div>
+     </section>
+    </div>
+    <footer id="footer">
+     <div style="width:100%;overflow:hidden">
+      <div class="footer-line">
+      </div>
+     </div>
+     <div id="footer-info">
+      <div>
+       <span class="icon-copyright">
+       </span>
+       2025.03.01
+       <span class="footer-info-sep rotate">
+       </span>
+       BW Liu
+      </div>
+      <div>
+       QQ：
+       <a href="/images/QQ.jpg" rel="noopener external nofollow noreferrer" target="_blank">
+        3511513463
+       </a>
+      </div>
+      <div>
+       phone：
+       <a href="/images/WX.jpg" rel="noopener external nofollow noreferrer" target="_blank">
+        15903627258
+       </a>
+      </div>
+      <div>
+       <span class="icon-eye">
+       </span>
+       <span id="busuanzi_container_site_pv">
+        总访问量
+        <span id="busuanzi_value_site_pv">
+        </span>
+       </span>
+       |
+       <span class="icon-user">
+       </span>
+       <span id="busuanzi_container_site_uv">
+        总访客量
+        <span id="busuanzi_value_site_uv">
+        </span>
+       </span>
+      </div>
+     </div>
+    </footer>
+    <div class="sidebar-top">
+     <div class="sidebar-top-taichi rotate">
+     </div>
+     <div class="arrow-up">
+     </div>
+    </div>
+    <div class="hide" id="mask">
+    </div>
+   </div>
+   <nav id="mobile-nav">
+    <div class="sidebar-wrap">
+     <div class="sidebar-author">
+      <img alt="D-Sketon" class="lazyload" data-sizes="auto" data-src="/avatar/avatar.webp"/>
+      <div class="sidebar-author-name">
+       BW Liu
+      </div>
+      <div class="sidebar-description">
+       BW Liu's website
+      </div>
+     </div>
+     <div class="sidebar-state">
+      <div class="sidebar-state-article">
+       <div>
+        文章
+       </div>
+       <div class="sidebar-state-number">
+        0
+       </div>
+      </div>
+      <div class="sidebar-state-category">
+       <div>
+        分类
+       </div>
+       <div class="sidebar-state-number">
+        0
+       </div>
+      </div>
+      <div class="sidebar-state-tag">
+       <div>
+        标签
+       </div>
+       <div class="sidebar-state-number">
+        0
+       </div>
+      </div>
+     </div>
+     <div class="sidebar-social">
+      <div class="icon-qq sidebar-social-icon">
+       <a aria-label="QQ" href="../images/QQ.jpg" rel="noopener external nofollow noreferrer" target="_blank">
+       </a>
+      </div>
+      <div class="icon-weixin sidebar-social-icon">
+       <a aria-label="微信" href="../images/WX.jpg" rel="noopener external nofollow noreferrer" target="_blank">
+       </a>
+      </div>
+      <div class="icon-bilibili sidebar-social-icon">
+       <a aria-label="bilibili" href="" itemprop="url" rel="noopener external nofollow noreferrer" target="_blank">
+       </a>
+      </div>
+     </div>
+     <div class="sidebar-menu">
+      <div class="sidebar-menu-link-wrap">
+       <a aria-label="首页" class="sidebar-menu-link-dummy" href="/">
+       </a>
+       <a href="/">
+        <img alt="a图标" src="/images/a.ico"/>
+       </a>
+       <div class="sidebar-menu-link" id="text-a2">
+        首页
+       </div>
+      </div>
+      <div class="sidebar-menu-link-wrap">
+       <a aria-label="想法BLOG" class="sidebar-menu-link-dummy" href="/idea">
+       </a>
+       <a href="idea">
+        <img alt="b图标" src="/images/b.ico"/>
+       </a>
+       <div class="sidebar-menu-link" id="text-b2">
+        想法BLOG
+       </div>
+      </div>
+      <div class="sidebar-menu-link-wrap">
+       <a aria-label="记录生活" class="sidebar-menu-link-dummy" href="/record">
+       </a>
+       <a href="record">
+        <img alt="c图标" src="/images/c.ico"/>
+       </a>
+       <div class="sidebar-menu-link" id="text-c2">
+        记录生活
+       </div>
+      </div>
+      <div class="sidebar-menu-link-wrap">
+       <a aria-label="内置小游戏" class="sidebar-menu-link-dummy" href="/game">
+       </a>
+       <a href="game">
+        <img alt="d图标" src="/images/d.ico"/>
+       </a>
+       <div class="sidebar-menu-link" id="text-d2">
+        内置小游戏
+       </div>
+      </div>
+     </div>
+    </div>
+   </nav>
+  </div>
   <div class="site-search">
    <div class="reimu-popup popup">
     <div class="reimu-search">
@@ -529,7 +531,7 @@
    </div>
   </div>
   <script>
-   var selectSelected=document.getElementById("select-selected"),selectedLang=document.getElementById("selected-lang"),selectItems=document.getElementById("select-items"),selectOptions=selectItems.querySelectorAll("li");const textElements={},languageText={};languageText["zh-CN"]={"wen1":"魔法少女正在为您召唤网页...","wen2":"首页","wen3":"想法BLOG","wen4":"记录生活","wen5":"内置小游戏","selected-lang":"简体中文","wen6":"简体中文","wen7":"欢迎来访BW Liuの小站","subtitle":"生活晴朗，万事可爱！","wen8":"BW Liu的个人网站","wen9":"文章","wen10":"分类","wen11":"标签","text-a1":"首页","text-b1":"想法BLOG","text-c1":"记录生活","text-d1":"内置小游戏","wen12":"标签云","wen13":"分类：想法BLOG","wen14":"0 篇内容","wen15":"分类：记录生活","wen16":"0 篇内容","本站信息":"本站信息","wen17":"站名： BW Liu's website","wen18":"站长： BW Liu","wen19":"地址：","wen20":"留言","wen21":"阅读量","busuanzi_container_site_pv":"总访问量","busuanzi_container_site_uv":"总访客量","wen22":"文章","wen23":"分类","wen24":"标签","text-a2":"首页","text-b2":"想法BLOG","text-c2":"记录生活","text-d2":"内置小游戏"};languageText["en"]={"wen1":"Magical Girl is summoning a web page for you...","wen2":"Home","wen3":"Idea BLOG","wen4":"Documenting Life","wen5":"Built-in mini-game","selected-lang":"Chinese Simplified","wen6":"Chinese Simplified","wen7":"Welcome to BW Liu","subtitle":"Life is sunny and everything is lovely!","wen8":"BW Liu's personal site","wen9":"articles","wen10":"category","wen11":"tags","text-a1":"home","text-b1":"idea blog","text-c1":"record life","text-d1":"built-in mini-games","wen12":"tag cloud","wen13":"category:idea blog","wen14":"0 contents","wen15":"Category:Record life","wen16":"0 contents","本站信息":"本站信息","wen17":"站名: BW Liu's website","wen18":"站master: BW Liu","wen19":"Address:","wen20":"Message","wen21":"Readings","busuanzi_container_site_pv":"Total Visits","busuanzi_container_site_uv":"Total Visitors","wen22":"Articles","wen23":"Categories","wen24":"Tags","text-a2":"Home","text-b2":"Idea BLOG","text-c2":"Record Life","text-d2":"Built-in mini-games"};["wen1","wen2","wen3","wen4","wen5","selected-lang","wen6","wen7","subtitle","wen8","wen9","wen10","wen11","text-a1","text-b1","text-c1","text-d1","wen12","wen13","wen14","wen15","wen16","本站信息","wen17","wen18","wen19","wen20","wen21","busuanzi_container_site_pv","busuanzi_container_site_uv","wen22","wen23","wen24","text-a2","text-b2","text-c2","text-d2"].forEach(key=>{textElements[key]=document.getElementById(key)});selectSelected.addEventListener("click",()=>{selectItems.classList.toggle("show")});selectOptions.forEach(t=>{t.addEventListener("click",()=>{const selectedLanguage=t.dataset.value;selectedLang.textContent=t.textContent;selectItems.classList.remove("show");selectOptions.forEach(e=>{e.classList.remove("selected")});t.classList.add("selected");["wen1","wen2","wen3","wen4","wen5","selected-lang","wen6","wen7","subtitle","wen8","wen9","wen10","wen11","text-a1","text-b1","text-c1","text-d1","wen12","wen13","wen14","wen15","wen16","本站信息","wen17","wen18","wen19","wen20","wen21","busuanzi_container_site_pv","busuanzi_container_site_uv","wen22","wen23","wen24","text-a2","text-b2","text-c2","text-d2"].forEach(key=>{textElements[key].textContent=languageText[selectedLanguage][key]})});document.addEventListener("click",e=>{if(!e.target.closest(".custom-dropdown")){selectItems.classList.remove("show")}}});
+   var selectSelected = document.getElementById("select-selected"),selectedLang = document.getElementById("selected-lang"),selectItems = document.getElementById("select-items"),selectOptions = selectItems.querySelectorAll("li"),textA = document.getElementById("text-a"), textB = document.getElementById("text-b"), textC = document.getElementById("text-c"),textD = document.getElementById("text-d"),textA1 = document.getElementById("text-a1"), textB1 = document.getElementById("text-b1"), textC1 = document.getElementById("text-c1"),textD1 = document.getElementById("text-d1"),textA2 = document.getElementById("text-a2"), textB2 = document.getElementById("text-b2"), textC2 = document.getElementById("text-c2"),textD2 = document.getElementById("text-d2"),textE = document.getElementById("text-e"),textF = document.getElementById("text-f"),textG = document.getElementById("text-g"),textH = document.getElementById("text-h"),textI = document.getElementById("text-i"),textJ = document.getElementById("text-j"),textK = document.getElementById("text-k");const languageText = {"zh-CN": {a: "首页",b: "想法BLOG",c: "记录生活",d: "内置小游戏",a1: "首页",b1: "想法BLOG",c1: "记录生活",d1: "内置小游戏",a2: "首页",b2: "想法BLOG",c2: "记录生活",d2: "内置小游戏",e: "BW Liu的个人网站",f: "文章",g: "分类",h: "标签",i: "标签云",j: "分类：想法BLOG",k: "分类：记录生活",l: "0 篇内容",},"en": {a: "Home", b: "Ideas BLOG", c: "Life Records", d: "Built-in Mini Games",a1: "Home", b1: "Ideas BLOG", c1: "Life Records", d1: "Built-in Mini Games",a2: "Home", b2: "Ideas BLOG", c2: "Life Records", d2: "Built-in Mini Games", e: "BW Liu's Personal Website", f: "Articles", g: "Categories", h: "Tags", i: "Tag Cloud", j: "Category: Ideas and blogs", k: "Category: Life Records", l: "0 pieces of content"}};selectSelected.addEventListener("click", () => {selectItems.classList.toggle("show");});selectOptions.forEach(t => {t.addEventListener("click", () => {const selectedLanguage = t.dataset.value; selectedLang.textContent = t.textContent; selectItems.classList.remove("show"); selectOptions.forEach(e => { e.classList.remove("selected") }); t.classList.add("selected"); textA.textContent = languageText[selectedLanguage].a;textB.textContent = languageText[selectedLanguage].b;textC.textContent = languageText[selectedLanguage].c;textD.textContent = languageText[selectedLanguage].d;textA1.textContent = languageText[selectedLanguage].a1;textB1.textContent = languageText[selectedLanguage].b1;textC1.textContent = languageText[selectedLanguage].c1;textD1.textContent = languageText[selectedLanguage].d1;textA2.textContent = languageText[selectedLanguage].a2;textB2.textContent = languageText[selectedLanguage].b2;textC2.textContent = languageText[selectedLanguage].c2;textD2.textContent = languageText[selectedLanguage].d2;textE.textContent = languageText[selectedLanguage].e;textF.textContent = languageText[selectedLanguage].f;textG.textContent = languageText[selectedLanguage].g;textH.textContent = languageText[selectedLanguage].h;textI.textContent = languageText[selectedLanguage].i;textJ.textContent = languageText[selectedLanguage].j;textK.textContent = languageText[selectedLanguage].k;});});document.addEventListener("click", e => {if (!e.target.closest(".custom-dropdown")) {selectItems.classList.remove("show");}});
   </script>
   <script crossorigin="anonymous" integrity="sha384-3gT/vsepWkfz/ff7PpWNUeMzeWoH3cDhm/A8jM7ouoAK0/fP/9bcHHR5kHq2nf+e" src="https://npm.webcache.cn/lazysizes@5.3.2/lazysizes.min.js">
   </script>
@@ -568,7 +570,7 @@
   <div id="lazy-script">
    <div>
     <script data-pjax="">
-     window.REIMU_POST={author:"BW Liu",title:"友情链接",url:"https://BWLiuBase.github.io/game/index.html",excerpt:"",description:"",stripContent:" 本站信息  站名： 拔剑Sketon 站长： 拔剑Sketon 地址：https://BWLiuBase.github.io/   申请方法  添加本站后，在本页留言，格式如下  123456```yml- name: #您的名字  url: #您的网址  desc: #简短描述  image: #一张图片```  小伙伴们                                                           ",date:"Mon Oct 28 2024 21:03:02 GMT+0800",updated:"Mon Oct 28 2024 21:03:02 GMT+0800",cover:"/images/banner.webp"}
+     window.REIMU_POST={author:"D-Sketon",title:"友情链接",url:"https://BWLiuBase.github.io/game/index.html",excerpt:"",description:"",stripContent:" 本站信息  站名： 拔剑Sketon 站长： 拔剑Sketon 地址：https://BWLiuBase.github.io/   申请方法  添加本站后，在本页留言，格式如下  123456```yml- name: #您的名字  url: #您的网址  desc: #简短描述  image: #一张图片```  小伙伴们                                                           ",date:"Mon Oct 28 2024 21:03:02 GMT+0800",updated:"Mon Oct 28 2024 21:03:02 GMT+0800",cover:"/images/banner.webp"}
     </script>
     <script data-pjax="" src="/js/insert_highlight.js">
     </script>
@@ -645,3 +647,4 @@
   </script>
  </body>
 </html>
+
