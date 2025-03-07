@@ -1,75 +1,118 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-color-mode="light">
 <head>
     <meta charset="UTF-8">
-    <title>全功能创作中心 - bwliubase</title>
-    <!-- 核心依赖 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客创作中心 - bwliubase</title>
+    
+    <!-- 核心样式 -->
     <style>
-        /* 基础样式...（保留原有基础样式） */
+    :root {
+        --primary: #0969da;
+        --bg-base: #ffffff;
+        --bg-secondary: #f6f8fa;
+        --border: #d0d7de;
+        --text: #24292f;
+        --text-light: #57606a;
+        --font-base: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+        --font-code: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+        --radius: 6px;
+        --shadow: 0 1px 3px rgba(0,0,0,0.12);
+    }
 
-        /* 增强工具栏 */
-        .toolbar-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            padding: 5px 0;
-            border-right: 1px solid var(--border-color);
-            padding-right: 15px;
-        }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-        /* 代码语言选择器 */
-        .lang-selector {
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            margin-left: 10px;
-        }
+    body {
+        background: var(--bg-secondary);
+        font-family: var(--font-base);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+        padding: 1rem;
+    }
 
-        /* 表格编辑器 */
-        .table-config {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin: 10px 0;
-        }
+    .editor-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        max-width: 1600px;
+        margin: 0 auto;
+        height: calc(100vh - 2rem);
+    }
 
-        /* 表情面板增强 */
-        .emoji-tabs {
-            display: flex;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 10px;
-        }
+    .editor-pane {
+        background: var(--bg-base);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+    }
 
-        .emoji-tab {
-            padding: 8px 15px;
-            cursor: pointer;
-            border-radius: 4px 4px 0 0;
-        }
+    .editor-toolbar {
+        padding: 0.8rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        background: var(--bg-secondary);
+        border-radius: var(--radius) var(--radius) 0 0;
+    }
 
-        .emoji-tab.active {
-            background: var(--primary-color);
-            color: white;
-        }
+    .tool-btn {
+        padding: 0.4rem 0.8rem;
+        background: var(--bg-base);
+        border: 1px solid var(--border);
+        border-radius: calc(var(--radius) - 2px);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
 
-        /* 公式工具栏 */
-        .formula-toolbar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
-        }
+    .tool-btn:hover {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
 
-        /* 历史版本面板 */
-        .history-panel {
-            position: fixed;
-            right: 20px;
-            top: 100px;
-            width: 300px;
-            background: white;
-            padding: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    #editor {
+        flex: 1;
+        padding: 1.2rem;
+        border: 0;
+        resize: none;
+        font-family: var(--font-code);
+        font-size: 14px;
+        line-height: 1.5;
+        tab-size: 4;
+        background: var(--bg-base);
+        color: var(--text);
+    }
+
+    .preview-pane {
+        background: var(--bg-base);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.2rem;
+        overflow-y: auto;
+        box-shadow: var(--shadow);
+    }
+
+    @media (max-width: 768px) {
+        .editor-container {
+            grid-template-columns: 1fr;
+            height: auto;
         }
+        
+        .editor-pane {
+            height: 60vh;
+        }
+    }
     </style>
 </head>
 <body>
@@ -77,185 +120,2574 @@
         <!-- 编辑器左侧 -->
         <div class="editor-pane">
             <div class="editor-toolbar">
-                <!-- 功能分组 -->
-                <div class="toolbar-group">
-                    <button onclick="formatText('bold')"><strong>B</strong></button>
-                    <button onclick="formatText('italic')"><em>I</em></button>
-                    <button onclick="showEmojiPicker(event)">😀</button>
-                    <select class="lang-selector" onchange="insertCodeBlock(this.value)">
-                        <option value="">代码语言</option>
-                        <option value="javascript">JavaScript</option>
-                        <option value="python">Python</option>
-                        <option value="java">Java</option>
-                        <option value="mermaid">Mermaid</option>
-                    </select>
-                </div>
-                
-                <div class="toolbar-group">
-                    <button onclick="showTableDialog()">表格</button>
-                    <button onclick="insertFormula('block')">公式块</button>
-                    <button onclick="insertFormula('inline')">行内公式</button>
-                    <input type="file" id="imageUpload" hidden multiple>
-                </div>
+                <button class="tool-btn" data-action="bold">B</button>
+                <button class="tool-btn" data-action="italic">I</button>
+                <button class="tool-btn" data-action="code">Code</button>
+                <button class="tool-btn" data-action="image">Image</button>
+                <input type="file" id="imageUpload" hidden accept="image/*">
             </div>
-            <textarea id="editor"></textarea>
+            <textarea id="editor" placeholder="开始撰写你的博客..."></textarea>
         </div>
 
-        <!-- 预览区域 -->
+        <!-- 预览右侧 -->
         <div class="preview-pane" id="preview"></div>
-
-        <!-- 表情选择器 -->
-        <div id="emojiPicker" class="emoji-picker">
-            <div class="emoji-tabs">
-                <div class="emoji-tab active" onclick="switchEmojiTab('smileys')">表情</div>
-                <div class="emoji-tab" onclick="switchEmojiTab('symbols')">符号</div>
-            </div>
-            <div class="emoji-category" id="smileys">
-                <!-- 动态加载表情 -->
-            </div>
-            <div class="emoji-category" id="symbols" style="display:none;">
-                <!-- 特殊符号 -->
-            </div>
-        </div>
-
-        <!-- 表格配置对话框 -->
-        <div class="table-dialog" id="tableDialog">
-            <h3>创建表格</h3>
-            <div class="table-config">
-                <label>行数 <input type="number" id="rows" min="1" value="3"></label>
-                <label>列数 <input type="number" id="cols" min="1" value="3"></label>
-                <label>表头 <input type="checkbox" id="hasHeader" checked></label>
-                <select id="alignment">
-                    <option value="left">左对齐</option>
-                    <option value="center">居中</option>
-                    <option value="right">右对齐</option>
-                </select>
-            </div>
-            <button onclick="generateTable()">生成</button>
-            <button onclick="closeDialog()">取消</button>
-        </div>
-
-        <!-- 历史版本面板 -->
-        <div class="history-panel" id="historyPanel">
-            <h4>历史版本</h4>
-            <ul id="historyList"></ul>
-        </div>
     </div>
 
+    <!-- 基础脚本 -->
     <script>
-        // 初始化配置
-        const EMOJI_MAP = {
-            smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇'],
-            symbols: ['⭐', '✨', '❄️', '❤️', '💡', '🎉', '✅', '❌', '⚠️', '⚡']
-        };
+    // 编辑器核心配置
+    const editor = document.getElementById('editor');
+    const preview = document.getElementById('preview');
+    let isDraftSaved = true;
 
-        // 增强的Markdown解析
-        const renderer = {
-            code(code, lang) {
-                if (lang === 'mermaid') {
-                    return `<div class="mermaid">${code}</div>`;
-                }
-                return `<pre><code class="hljs ${lang}">${hljs.highlightAuto(code).value}</code></pre>`;
-            },
-            image(href, title, text) {
-                return `<img src="${href}" alt="${text}" class="md-image">`;
-            }
-        };
-
-        // 初始化编辑器
-        function initEditor() {
-            // 初始化事件监听
-            editor.addEventListener('input', debounce(updatePreview, 300));
-            document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
-            
-            // 加载历史版本
-            loadHistory();
+    // 初始化编辑器
+    function initEditor() {
+        // 加载草稿
+        const draft = localStorage.getItem('blog_draft');
+        if(draft) {
+            editor.value = draft;
+            updatePreview();
         }
 
-        // 完整表情功能
-        function showEmojiPicker(e) {
-            const picker = document.getElementById('emojiPicker');
-            picker.style.display = 'block';
-            picker.style.left = `${e.clientX}px`;
-            picker.style.top = `${e.clientY}px`;
-            if (!picker.innerHTML) renderEmojis();
-        }
+        // 输入监听
+        editor.addEventListener('input', () => {
+            isDraftSaved = false;
+            updatePreview();
+            autoSaveDraft();
+        });
 
-        function renderEmojis() {
-            Object.entries(EMOJI_MAP).forEach(([category, items]) => {
-                const container = document.getElementById(category);
-                container.innerHTML = items.map(emoji => `
-                    <span class="emoji-item" onclick="insertEmoji('${emoji}')">${emoji}</span>
-                `).join('');
-            });
-        }
+        // 工具栏事件
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', handleToolbarAction);
+        });
+    }
 
-        // 完整表格生成
-        function generateTable() {
-            const rows = parseInt(document.getElementById('rows').value);
-            const cols = parseInt(document.getElementById('cols').value);
-            const hasHeader = document.getElementById('hasHeader').checked;
-            const align = document.getElementById('alignment').value;
-            
-            let tableMd = '';
-            if (hasHeader) {
-                tableMd += '| ' + ' Header |'.repeat(cols) + '\n';
-                tableMd += '|' + ` ${getAlignmentMark(align)} |`.repeat(cols) + '\n';
-            }
-            for (let i=0; i<rows; i++) {
-                tableMd += '| ' + ' Content |'.repeat(cols) + '\n';
-            }
-            insertText(tableMd);
-        }
+    // 更新预览
+    function updatePreview() {
+        preview.innerHTML = editor.value;
+    }
 
-        // 数学公式支持
-        function insertFormula(type) {
-            const template = type === 'block' ? '\n$$\n\\boxed{E=mc^2}\n$$\n' : ' $E=mc^2$ ';
-            insertText(template);
-        }
+    // 自动保存草稿（节流）
+    let saveTimer;
+    function autoSaveDraft() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+            localStorage.setItem('blog_draft', editor.value);
+            isDraftSaved = true;
+        }, 2000);
+    }
 
-        // 增强代码插入
-        function insertCodeBlock(lang) {
-            const template = 
-                '```' + lang + '\n' +
-                (lang === 'mermaid' ? 
-                    'graph TD\n  A[开始] --> B(结束)' : 
-                    '// 输入代码...') + 
-                '\n```';
-            insertText(template);
+    // 工具栏操作处理
+    function handleToolbarAction(e) {
+        const action = e.target.dataset.action;
+        switch(action) {
+            case 'bold':
+                wrapSelection('**', '**');
+                break;
+            case 'italic':
+                wrapSelection('_', '_');
+                break;
+            case 'code':
+                wrapSelection('```\n', '\n```');
+                break;
+            case 'image':
+                document.getElementById('imageUpload').click();
+                break;
         }
+    }
 
-        // 历史版本管理
-        let history = JSON.parse(localStorage.getItem('editHistory') || '[]');
+    // 文本选择处理
+    function wrapSelection(prefix, suffix) {
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        const selected = editor.value.substring(start, end);
         
-        function saveHistory() {
-            history.push({
-                content: editor.value,
-                timestamp: new Date().toLocaleString()
-            });
-            if (history.length > 5) history.shift();
-            localStorage.setItem('editHistory', JSON.stringify(history));
-            renderHistory();
-        }
+        editor.setRangeText(prefix + selected + suffix);
+        editor.focus();
+        editor.selectionStart = start + prefix.length;
+        editor.selectionEnd = end + prefix.length;
+    }
 
-        function renderHistory() {
-            document.getElementById('historyList').innerHTML = history
-                .map((item, index) => `
-                    <li>
-                        <span>版本${index+1}</span>
-                        <small>${item.timestamp}</small>
-                        <button onclick="loadVersion(${index})">恢复</button>
-                    </li>
-                `).join('');
-        }
-
-        // 初始化所有组件
-        window.onload = function() {
-            initEditor();
-            mermaid.initialize({ theme: 'neutral' });
-            hljs.initHighlightingOnLoad();
-            renderEmojis();
-        };
+    // 初始化
+    window.onload = initEditor;
     </script>
-</body>
-</html>
+    <!-- 接上文 -->
+    <script>
+    // 初始化Markdown解析器
+    const markedConfig = {
+        breaks: true,
+        gfm: true,
+        headerIds: false,
+        highlight: (code, lang) => {
+            const validLang = hljs.getLanguage(lang) ? lang : 'plaintext';
+            return hljs.highlight(code, { language: validLang }).value;
+        }
+    };
+    
+    // 增强预览功能
+    function updatePreview() {
+        marked.parse(editor.value, markedConfig, (err, html) => {
+            if (!err) {
+                preview.innerHTML = html;
+                addCodeCopyButtons();
+                renderMathExpressions();
+                applyImageZoom();
+            }
+        });
+    }
+    
+    // 代码块复制功能
+    function addCodeCopyButtons() {
+        document.querySelectorAll('pre code').forEach(block => {
+            if (block.previousElementSibling?.classList.contains('copy-btn')) return;
+            
+            const btn = document.createElement('button');
+            btn.className = 'copy-btn';
+            btn.innerHTML = '📋';
+            btn.title = '复制代码';
+            btn.addEventListener('click', () => {
+                navigator.clipboard.writeText(block.textContent);
+                btn.innerHTML = '✅';
+                setTimeout(() => btn.innerHTML = '📋', 2000);
+            });
+            block.parentNode.insertBefore(btn, block);
+        });
+    }
+    
+    // 图片处理系统
+    document.getElementById('imageUpload').addEventListener('change', async function(e) {
+        const files = Array.from(e.target.files);
+        for (const file of files) {
+            try {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    insertImageMarkdown(file.name, reader.result);
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                console.error('图片上传失败:', error);
+            }
+        }
+    });
+    
+    function insertImageMarkdown(alt, src) {
+        const markdown = `![${alt}](${src})`;
+        const start = editor.selectionStart;
+        editor.value = editor.value.slice(0, start) + markdown + editor.value.slice(start);
+        editor.focus();
+        editor.selectionStart = editor.selectionEnd = start + markdown.length;
+        updatePreview();
+    }
+    
+    // 表格生成器
+    let tableDialog = null;
+    function initTableGenerator() {
+        tableDialog = document.createElement('div');
+        tableDialog.className = 'table-dialog';
+        tableDialog.innerHTML = `
+            <div class="dialog-content">
+                <h3>创建表格</h3>
+                <div class="table-config">
+                    <label>行数: <input type="number" id="rows" min="1" value="3"></label>
+                    <label>列数: <input type="number" id="cols" min="1" value="3"></label>
+                    <button onclick="generateTable()">生成</button>
+                    <button onclick="closeTableDialog()">取消</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(tableDialog);
+    }
+    
+    function generateTable() {
+        const rows = parseInt(document.getElementById('rows').value) || 3;
+        const cols = parseInt(document.getElementById('cols').value) || 3;
+        
+        let tableMd = '';
+        // 生成表头
+        tableMd += '| ' + ' Header |'.repeat(cols) + '\n';
+        tableMd += '|' + ' --- |'.repeat(cols) + '\n';
+        
+        // 生成表格内容
+        for (let i = 0; i < rows; i++) {
+            tableMd += '| ' + ' Content |'.repeat(cols) + '\n';
+        }
+        
+        insertTextAtCursor(tableMd);
+        closeTableDialog();
+    }
+    
+    // 通用工具函数
+    function insertTextAtCursor(text) {
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        editor.value = editor.value.slice(0, start) + text + editor.value.slice(end);
+        editor.focus();
+        editor.selectionStart = editor.selectionEnd = start + text.length;
+        updatePreview();
+    }
+    
+    // 数学公式支持
+    function renderMathExpressions() {
+        const inlineMath = /\\\((.*?)\\\)/g;
+        const blockMath = /\\\[(.*?)\\\]/g;
+        
+        preview.innerHTML = preview.innerHTML
+            .replace(inlineMath, (_, expr) => katex.renderToString(expr))
+            .replace(blockMath, (_, expr) => katex.renderToString(expr, { displayMode: true }));
+    }
+    
+    // 图片缩放交互
+    function applyImageZoom() {
+        preview.querySelectorAll('img').forEach(img => {
+            img.style.cursor = 'zoom-in';
+            img.onclick = () => {
+                if (img.style.transform === 'scale(2)') {
+                    img.style.transform = 'scale(1)';
+                } else {
+                    img.style.transform = 'scale(2)';
+                    img.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            };
+        });
+    }
+    
+    // 初始化扩展功能
+    function initExtensions() {
+        hljs.configure({
+            languages: ['javascript', 'python', 'java', 'cpp', 'bash', 'json', 'html', 'css'],
+            ignoreUnescapedHTML: true
+        });
+        
+        initTableGenerator();
+        
+        // 数学公式配置
+        window.katex = {
+            macros: { "\\RR": "\\mathbb{R}" }
+        };
+    }
+    
+    // 增强初始化流程
+    function initEditor() {
+        // 原有初始化代码...
+        initExtensions(); // 新增扩展初始化
+    }
+    
+    // 样式增强
+    const additionalStyles = `
+    /* 代码块样式 */
+    .hljs {
+        padding: 1.2em;
+        border-radius: 6px;
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 1em 0;
+        position: relative;
+    }
+    
+    .copy-btn {
+        position: absolute;
+        right: 8px;
+        top: 8px;
+        background: rgba(255,255,255,0.9);
+        border: 1px solid var(--border);
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    
+    .table-dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--bg-base);
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        z-index: 1000;
+    }
+    
+    .table-dialog input {
+        padding: 0.4rem;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        margin: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .table-dialog {
+            width: 90%;
+            padding: 1rem;
+        }
+    }
+    `;
+    
+    const styleSheet = document.createElement('style');
+    styleSheet.innerHTML = additionalStyles;
+    document.head.appendChild(styleSheet);
+    </script>
+    <!-- 接上文 -->
+    <script>
+    // 表情符号系统
+    const EMOJI_CATEGORIES = {
+        'people': ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇'],
+        'nature': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯'],
+        'symbols': ['❤️', '✨', '⭐', '🔥', '💡', '🎉', '✅', '❌', '⚠️', '⚡']
+    };
+    
+    let emojiPicker = null;
+    function initEmojiPicker() {
+        emojiPicker = document.createElement('div');
+        emojiPicker.className = 'emoji-picker';
+        emojiPicker.innerHTML = `
+            <div class="emoji-tabs">
+                ${Object.keys(EMOJI_CATEGORIES).map(cat => `
+                    <button class="emoji-tab" data-cat="${cat}">${cat}</button>
+                `).join('')}
+            </div>
+            <div class="emoji-container"></div>
+        `;
+        document.body.appendChild(emojiPicker);
+        
+        // 事件绑定
+        emojiPicker.querySelectorAll('.emoji-tab').forEach(tab => {
+            tab.addEventListener('click', () => showEmojiCategory(tab.dataset.cat));
+        });
+    }
+    
+    function showEmojiPicker(event) {
+        emojiPicker.style.display = 'block';
+        emojiPicker.style.left = `${event.clientX - 200}px`;
+        emojiPicker.style.top = `${event.clientY + 10}px`;
+        showEmojiCategory('people');
+    }
+    
+    function showEmojiCategory(category) {
+        const container = emojiPicker.querySelector('.emoji-container');
+        container.innerHTML = EMOJI_CATEGORIES[category].map(emoji => `
+            <span class="emoji-item" data-emoji="${emoji}">${emoji}</span>
+        `).join('');
+        
+        // 绑定点击事件
+        container.querySelectorAll('.emoji-item').forEach(item => {
+            item.addEventListener('click', () => insertEmoji(item.dataset.emoji));
+        });
+    }
+    
+    function insertEmoji(emoji) {
+        insertTextAtCursor(emoji);
+        emojiPicker.style.display = 'none';
+    }
+    
+    // 版本历史管理系统
+    const HISTORY_MAX = 5;
+    let editHistory = JSON.parse(localStorage.getItem('editHistory') || [];
+    
+    function saveHistory() {
+        const content = editor.value;
+        if (content === editHistory[editHistory.length - 1]?.content) return;
+        
+        editHistory.push({
+            content,
+            timestamp: new Date().toISOString(),
+            wordCount: content.length
+        });
+        
+        if (editHistory.length > HISTORY_MAX) {
+            editHistory = editHistory.slice(-HISTORY_MAX);
+        }
+        
+        localStorage.setItem('editHistory', JSON.stringify(editHistory));
+        renderHistoryList();
+    }
+    
+    function renderHistoryList() {
+        const list = document.getElementById('historyList');
+        list.innerHTML = editHistory.map((entry, index) => `
+            <li class="history-item">
+                <div class="history-meta">
+                    <span>版本 ${index + 1}</span>
+                    <small>${new Date(entry.timestamp).toLocaleString()}</small>
+                </div>
+                <button class="restore-btn" data-index="${index}">恢复</button>
+            </li>
+        `).join('');
+        
+        // 绑定恢复事件
+        list.querySelectorAll('.restore-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const content = editHistory[btn.dataset.index].content;
+                editor.value = content;
+                updatePreview();
+            });
+        });
+    }
+    
+    // 文章发布系统
+    const PUBLISH_API = 'https://api.example.com/publish'; // 替换为实际API
+    
+    async function publishArticle() {
+        const article = {
+            title: document.getElementById('articleTitle').value,
+            content: editor.value,
+            tags: Array.from(document.querySelectorAll('.tag-item')).map(tag => tag.textContent),
+            meta: {
+                wordCount: editor.value.length,
+                created: new Date().toISOString()
+            }
+        };
+    
+        try {
+            const response = await fetch(PUBLISH_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(article)
+            });
+            
+            if (response.ok) {
+                clearDraft();
+                showToast('文章发布成功!');
+            } else {
+                throw new Error('发布失败');
+            }
+        } catch (error) {
+            showToast('发布失败，请稍后重试', 'error');
+        }
+    }
+    
+    function clearDraft() {
+        editor.value = '';
+        localStorage.removeItem('blog_draft');
+        editHistory = [];
+        updatePreview();
+    }
+    
+    // 自动保存优化
+    let autoSaveTimer;
+    function setupAutoSave() {
+        const THROTTLE_TIME = 15000; // 15秒
+        
+        editor.addEventListener('input', () => {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                saveHistory();
+                localStorage.setItem('blog_draft', editor.value);
+            }, THROTTLE_TIME);
+        });
+        
+        window.addEventListener('beforeunload', (e) => {
+            if (!isDraftSaved) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    }
+    
+    // 快捷键系统
+    function initShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + S
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                saveHistory();
+                showToast('草稿已保存');
+            }
+            
+            // Ctrl/Cmd + B
+            if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+                e.preventDefault();
+                wrapSelection('**', '**');
+            }
+            
+            // Ctrl/Cmd + I
+            if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+                e.preventDefault();
+                wrapSelection('_', '_');
+            }
+        });
+    }
+    
+    // 辅助UI组件
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.remove(), 3000);
+    }
+    
+    // 初始化扩展功能
+    function initEditor() {
+        // 原有初始化...
+        initEmojiPicker();
+        setupAutoSave();
+        initShortcuts();
+        renderHistoryList();
+        
+        // 发布按钮事件
+        document.getElementById('publishBtn').addEventListener('click', publishArticle);
+    }
+    
+    // 新增样式
+    const advancedStyles = `
+    /* 表情面板 */
+    .emoji-picker {
+        position: fixed;
+        background: var(--bg-base);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        width: 320px;
+        max-height: 400px;
+        z-index: 1000;
+        display: none;
+    }
+    
+    .emoji-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        padding: 8px;
+    }
+    
+    .emoji-tab {
+        padding: 6px 12px;
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
+    
+    .emoji-tab:hover {
+        background: var(--bg-secondary);
+    }
+    
+    .emoji-container {
+        padding: 12px;
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+        max-height: 340px;
+        overflow-y: auto;
+    }
+    
+    .emoji-item {
+        font-size: 24px;
+        cursor: pointer;
+        text-align: center;
+        transition: transform 0.2s;
+    }
+    
+    .emoji-item:hover {
+        transform: scale(1.2);
+    }
+    
+    /* 历史版本 */
+    .history-panel {
+        background: var(--bg-base);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px;
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        width: 280px;
+        max-height: 400px;
+        overflow-y: auto;
+        box-shadow: var(--shadow);
+    }
+    
+    .history-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .restore-btn {
+        padding: 4px 8px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    /* 响应式优化 */
+    @media (max-width: 768px) {
+        .history-panel {
+            position: static;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .emoji-picker {
+            width: 280px;
+            left: 50% !important;
+            transform: translateX(-50%);
+        }
+    }
+    `;
+    
+    const styleEl = document.createElement('style');
+    styleEl.textContent = advancedStyles;
+    document.head.appendChild(styleEl);
+    </script>
+    <!-- 接上文 -->
+    <script>
+    // 用户认证系统
+    let currentUser = null;
+    
+    function initAuth() {
+        const authToken = localStorage.getItem('authToken');
+        if (authToken) {
+            fetchUserProfile(authToken);
+        }
+        
+        // 初始化登录按钮
+        const authBtn = document.createElement('div');
+        authBtn.id = 'authWidget';
+        authBtn.innerHTML = `
+            ${currentUser ? `
+                <div class="user-panel">
+                    <img src="${currentUser.avatar}" class="user-avatar">
+                    <span>${currentUser.name}</span>
+                    <button onclick="logout()">登出</button>
+                </div>
+            ` : '<button onclick="showLogin()">登录</button>'}
+        `;
+        document.body.prepend(authBtn);
+    }
+    
+    async function fetchUserProfile(token) {
+        try {
+            const res = await fetch('/api/user', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            currentUser = await res.json();
+            updateAuthUI();
+        } catch (error) {
+            console.error('用户信息获取失败:', error);
+        }
+    }
+    
+    function showLogin() {
+        const dialog = document.createElement('div');
+        dialog.className = 'auth-dialog';
+        dialog.innerHTML = `
+            <h3>登录 bwliubase</h3>
+            <input type="text" id="username" placeholder="用户名/邮箱">
+            <input type="password" id="password" placeholder="密码">
+            <button onclick="handleLogin()">登录</button>
+            <button onclick="dialog.remove()">取消</button>
+        `;
+        document.body.appendChild(dialog);
+    }
+    
+    async function handleLogin() {
+        const credentials = {
+            id: document.getElementById('username').value,
+            password: document.getElementById('password').value
+        };
+    
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(credentials)
+            });
+            
+            const { token } = await res.json();
+            localStorage.setItem('authToken', token);
+            fetchUserProfile(token);
+        } catch (error) {
+            showToast('登录失败', 'error');
+        }
+    }
+    
+    function logout() {
+        localStorage.removeItem('authToken');
+        currentUser = null;
+        updateAuthUI();
+    }
+    
+    // 多图批量上传
+    async function handleBatchUpload(files) {
+        const uploads = Array.from(files).map(file => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    resolve({ name: file.name, data: reader.result });
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+    
+        const results = await Promise.all(uploads);
+        const markdown = results.map(f => `![${f.name}](${f.data})`).join('\n\n');
+        insertTextAtCursor(markdown);
+    }
+    
+    // 文章模板系统
+    const TEMPLATES = {
+        default: `# 标题\n\n开始创作...`,
+        tech: `## 背景\n\n## 实现方案\n\n### 核心技术\n\n## 效果展示\n\n## 总结`,
+        tutorial: `## 前置知识\n\n## 步骤说明\n\n### 第一步\n\n## 常见问题\n\n## 参考资料`
+    };
+    
+    function applyTemplate(templateKey) {
+        if (editor.value && !confirm('当前内容将被替换，是否继续？')) return;
+        editor.value = TEMPLATES[templateKey] || TEMPLATES.default;
+        updatePreview();
+    }
+    
+    // 目录生成器
+    function generateTOC() {
+        const headings = Array.from(preview.querySelectorAll('h1, h2, h3'));
+        if (headings.length === 0) {
+            return showToast('未检测到标题', 'warning');
+        }
+    
+        const toc = headings.map(h => {
+            const level = parseInt(h.tagName[1]);
+            return `${'  '.repeat(level - 1)}- [${h.textContent}](#${h.id})`;
+        }).join('\n');
+    
+        insertTextAtCursor(`## 目录\n${toc}\n\n`);
+    }
+    
+    // 高级代码块设置
+    function initCodeSettings() {
+        document.querySelectorAll('pre code').forEach(block => {
+            const lang = block.className.replace('language-', '');
+            const btn = document.createElement('button');
+            btn.className = 'code-settings-btn';
+            btn.innerHTML = '⚙️';
+            
+            btn.addEventListener('click', () => {
+                showCodeSettings(block, lang);
+            });
+            
+            block.parentNode.insertBefore(btn, block.nextSibling);
+        });
+    }
+    
+    function showCodeSettings(codeBlock, lang) {
+        const dialog = document.createElement('div');
+        dialog.className = 'code-dialog';
+        dialog.innerHTML = `
+            <h4>代码设置 (${lang})</h4>
+            <label>行号显示 <input type="checkbox" ${codeBlock.classList.contains('line-numbers') ? 'checked' : ''}></label>
+            <button onclick="toggleLineNumbers(this)">应用</button>
+        `;
+        codeBlock.parentNode.appendChild(dialog);
+    }
+    
+    function toggleLineNumbers(btn) {
+        const checkbox = btn.previousElementSibling;
+        const codeBlock = btn.closest('pre').querySelector('code');
+        codeBlock.classList.toggle('line-numbers', checkbox.checked);
+        btn.parentNode.remove();
+    }
+    
+    // 文章统计面板
+    function initStatsPanel() {
+        const stats = document.createElement('div');
+        stats.id = 'statsPanel';
+        stats.innerHTML = `
+            <h4>文章统计</h4>
+            <div class="stats-item">
+                <span>字数</span>
+                <span id="wordCount">0</span>
+            </div>
+            <div class="stats-item">
+                <span>段落</span>
+                <span id="paraCount">0</span>
+            </div>
+            <div class="stats-item">
+                <span>代码块</span>
+                <span id="codeCount">0</span>
+            </div>
+        `;
+        document.body.appendChild(stats);
+        updateStats();
+    }
+    
+    function updateStats() {
+        const content = editor.value;
+        document.getElementById('wordCount').textContent = content.length;
+        document.getElementById('paraCount').textContent = (content.match(/\n{2,}/g) || []).length + 1;
+        document.getElementById('codeCount').textContent = (content.match(/```/g) || []).length / 2;
+    }
+    
+    // 最终初始化
+    function initEditor() {
+        // 先前初始化代码...
+        initAuth();
+        initStatsPanel();
+        setInterval(updateStats, 5000);
+        
+        // 扩展编辑器事件
+        editor.addEventListener('dragover', handleDragOver);
+        editor.addEventListener('drop', handleFileDrop);
+    }
+    
+    // 拖放文件处理
+    function handleDragOver(e) {
+        e.preventDefault();
+        editor.classList.add('dragover');
+    }
+    
+    function handleFileDrop(e) {
+        e.preventDefault();
+        editor.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleBatchUpload(files);
+        }
+    }
+    
+    // 最终样式补充
+    const finalStyles = `
+    /* 用户认证 */
+    #authWidget {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 2000;
+        background: var(--bg-base);
+        padding: 8px 16px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+    }
+    
+    .user-panel {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+    }
+    
+    .auth-dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--bg-base);
+        padding: 24px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        z-index: 3000;
+        display: grid;
+        gap: 12px;
+        min-width: 300px;
+    }
+    
+    /* 统计面板 */
+    #statsPanel {
+        position: fixed;
+        left: 20px;
+        bottom: 20px;
+        background: var(--bg-base);
+        padding: 16px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        min-width: 180px;
+    }
+    
+    .stats-item {
+        display: flex;
+        justify-content: space-between;
+        margin: 8px 0;
+    }
+    
+    /* 代码设置 */
+    .code-dialog {
+        position: absolute;
+        right: 0;
+        top: 0;
+        background: var(--bg-base);
+        border: 1px solid var(--border);
+        padding: 8px;
+        border-radius: var(--radius);
+        z-index: 100;
+    }
+    
+    .code-settings-btn {
+        position: absolute;
+        right: 35px;
+        top: 8px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        opacity: 0.6;
+    }
+    
+    .code-settings-btn:hover {
+        opacity: 1;
+    }
+    
+    /* 拖放效果 */
+    .dragover {
+        outline: 2px dashed var(--primary);
+        background: rgba(9, 105, 218, 0.1) !important;
+    }
+    `;
+    
+    document.head.insertAdjacentHTML('beforeend', `<style>${finalStyles}</style>`);
+    </script>
+    <!-- 接上文 -->
+    <script>
+    // 文章元数据管理
+    const metaForm = document.createElement('form');
+    metaForm.id = 'metaForm';
+    metaForm.innerHTML = `
+        <div class="meta-section">
+            <h3>文章设置</h3>
+            <div class="form-group">
+                <label>标题：</label>
+                <input type="text" id="postTitle" required>
+            </div>
+            <div class="form-group">
+                <label>分类：</label>
+                <select id="postCategory">
+                    <option value="tech">技术</option>
+                    <option value="life">生活</option>
+                    <option value="other">其他</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>标签：</label>
+                <div class="tag-input">
+                    <input type="text" id="tagInput">
+                    <button type="button" onclick="addTag()">添加</button>
+                </div>
+                <div class="tag-list" id="tagList"></div>
+            </div>
+            <div class="form-group">
+                <label>摘要：</label>
+                <textarea id="postExcerpt" rows="3"></textarea>
+            </div>
+        </div>
+    `;
+    document.querySelector('.editor-container').prepend(metaForm);
+    
+    // 标签管理
+    let tags = [];
+    function addTag() {
+        const input = document.getElementById('tagInput');
+        const tag = input.value.trim();
+        if (tag && !tags.includes(tag)) {
+            tags.push(tag);
+            renderTags();
+            input.value = '';
+        }
+    }
+    
+    function renderTags() {
+        const container = document.getElementById('tagList');
+        container.innerHTML = tags.map(tag => `
+            <span class="tag-item">
+                ${tag}
+                <span class="tag-remove" onclick="removeTag('${tag}')">×</span>
+            </span>
+        `).join('');
+    }
+    
+    function removeTag(tag) {
+        tags = tags.filter(t => t !== tag);
+        renderTags();
+    }
+    
+    // 主题切换系统
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setTheme(savedTheme);
+        
+        const themeBtn = document.createElement('button');
+        themeBtn.id = 'themeToggle';
+        themeBtn.innerHTML = savedTheme === 'dark' ? '🌞' : '🌙';
+        themeBtn.onclick = toggleTheme;
+        document.body.append(themeBtn);
+    }
+    
+    function toggleTheme() {
+        const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+        setTheme(newTheme);
+        localStorage.setItem('theme', newTheme);
+    }
+    
+    function setTheme(theme) {
+        document.body.classList.toggle('dark-theme', theme === 'dark');
+        document.getElementById('themeToggle').innerHTML = theme === 'dark' ? '🌞' : '🌙';
+    }
+    
+    // 版本对比功能
+    function initDiffViewer() {
+        window.diffMatchPatch = new DiffMatchPatch();
+    }
+    
+    function showVersionDiff(oldIndex, newIndex) {
+        const oldText = editHistory[oldIndex].content;
+        const newText = editHistory[newIndex].content;
+        const diffs = diffMatchPatch.diff_main(oldText, newText);
+        diffMatchPatch.diff_cleanupSemantic(diffs);
+        
+        const display = diffs.map(([type, text]) => {
+            let style = '';
+            if (type === -1) style = 'background: #ffdddd';
+            if (type === 1) style = 'background: #ddffdd';
+            return `<span style="${style}">${escapeHtml(text)}</span>`;
+        }).join('');
+        
+        const diffWindow = window.open('', '_blank');
+        diffWindow.document.write(`
+            <h2>版本对比 (${oldIndex+1} → ${newIndex+1})</h2>
+            <div class="diff-output">${display}</div>
+            <style>
+                body { font-family: monospace; white-space: pre-wrap; }
+                .diff-output { padding: 20px; }
+            </style>
+        `);
+    }
+    
+    // 导出功能
+    function exportAs(format) {
+        const content = editor.value;
+        switch(format) {
+            case 'pdf':
+                const pdf = new jsPDF();
+                pdf.text(content, 10, 10);
+                pdf.save('article.pdf');
+                break;
+            case 'word':
+                const blob = new Blob([content], { type: 'text/msword' });
+                saveAs(blob, 'article.doc');
+                break;
+            case 'html':
+                const html = marked.parse(content);
+                const htmlBlob = new Blob([html], { type: 'text/html' });
+                saveAs(htmlBlob, 'article.html');
+                break;
+        }
+    }
+    
+    // SEO设置
+    function generateSEOMeta() {
+        const title = document.getElementById('postTitle').value;
+        const excerpt = document.getElementById('postExcerpt').value;
+        const keywords = tags.join(',');
+        
+        return `
+            <meta name="title" content="${title}">
+            <meta name="description" content="${excerpt}">
+            <meta name="keywords" content="${keywords}">
+            <meta property="og:type" content="article">
+        `;
+    }
+    
+    // 错误监控
+    window.onerror = function(message, source, lineno, colno, error) {
+        const errorData = {
+            message,
+            source,
+            line: lineno,
+            column: colno,
+            stack: error?.stack,
+            timestamp: new Date().toISOString(),
+            user: currentUser?.id
+        };
+        
+        navigator.sendBeacon('/api/log', JSON.stringify(errorData));
+        return true;
+    };
+    
+    // 最终初始化
+    function initEditor() {
+        // 原有初始化...
+        initTheme();
+        initDiffViewer();
+        
+        // 注册Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+    }
+    
+    // 样式补充
+    const finalStyles = `
+    /* 元数据表单 */
+    #metaForm {
+        grid-column: 1 / -1;
+        background: var(--bg-base);
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+    }
+    
+    .form-group {
+        margin: 15px 0;
+    }
+    
+    .form-group label {
+        display: inline-block;
+        width: 80px;
+    }
+    
+    .tag-input {
+        display: flex;
+        gap: 10px;
+        margin: 5px 0;
+    }
+    
+    .tag-item {
+        display: inline-flex;
+        align-items: center;
+        background: var(--bg-secondary);
+        padding: 4px 12px;
+        border-radius: 15px;
+        margin: 3px;
+    }
+    
+    .tag-remove {
+        cursor: pointer;
+        margin-left: 6px;
+        font-weight: bold;
+    }
+    
+    /* 暗黑主题 */
+    body.dark-theme {
+        --bg-base: #1e1e1e;
+        --bg-secondary: #2d2d2d;
+        --text: #e0e0e0;
+        --border: #404040;
+    }
+    
+    #themeToggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        font-size: 24px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        z-index: 1000;
+    }
+    
+    /* 响应式优化 */
+    @media (max-width: 768px) {
+        #metaForm {
+            padding: 10px;
+        }
+        
+        .form-group label {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .tag-input {
+            flex-direction: column;
+        }
+    }
+    `;
+    
+    document.head.insertAdjacentHTML('beforeend', `<style>${finalStyles}</style>`);
+    </script>
+    <!-- 接上文 -->
+    <script>
+    // AI辅助写作系统
+    class AIAssistant {
+        constructor() {
+            this.cache = new Map();
+            this.debounceTimer = null;
+        }
+    
+        async getSuggestions(text) {
+            clearTimeout(this.debounceTimer);
+            return new Promise(resolve => {
+                this.debounceTimer = setTimeout(async () => {
+                    if (this.cache.has(text)) {
+                        resolve(this.cache.get(text));
+                        return;
+                    }
+                    
+                    try {
+                        const res = await fetch('/api/ai/suggest', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ text })
+                        });
+                        const data = await res.json();
+                        this.cache.set(text, data);
+                        resolve(data);
+                    } catch (error) {
+                        console.error('AI请求失败:', error);
+                        resolve(null);
+                    }
+                }, 300);
+            });
+        }
+    
+        showAIPanel(suggestions) {
+            const panel = document.createElement('div');
+            panel.className = 'ai-panel';
+            panel.innerHTML = `
+                <h4>AI建议</h4>
+                <ul>
+                    ${suggestions.map(item => `
+                        <li onclick="applyAISuggestion('${item}')">${item}</li>
+                    `).join('')}
+                </ul>
+            `;
+            document.body.appendChild(panel);
+            positionPanelNearCursor(panel);
+        }
+    }
+    
+    // 协同编辑系统
+    class CollaborationEngine {
+        constructor() {
+            this.socket = io('https://collab.example.com');
+            this.operations = [];
+            this.buffer = [];
+            this.lock = false;
+            
+            this.socket.on('operation', op => {
+                if (!this.lock) {
+                    applyRemoteOperation(op);
+                } else {
+                    this.buffer.push(op);
+                }
+            });
+        }
+    
+        sendOperation(op) {
+            this.socket.emit('operation', op);
+            this.operations.push(op);
+        }
+    
+        applyRemoteOperation(op) {
+            this.lock = true;
+            const transformed = this.otTransform(op);
+            applyToEditor(transformed);
+            this.lock = false;
+            
+            while (this.buffer.length) {
+                this.applyRemoteOperation(this.buffer.shift());
+            }
+        }
+    
+        otTransform(incoming) {
+            // 实现Operational Transform算法
+            return incoming; // 简化实现
+        }
+    }
+    
+    // 移动端优化
+    function initMobileSupport() {
+        let touchStartY = 0;
+        const editorHeader = document.querySelector('.editor-toolbar');
+        
+        // 虚拟键盘处理
+        editor.addEventListener('focus', () => {
+            setTimeout(() => {
+                document.documentElement.scrollTop = editor.offsetTop - 100;
+            }, 300);
+        });
+    
+        // 工具栏手势
+        editorHeader.addEventListener('touchstart', e => {
+            touchStartY = e.touches[0].clientY;
+        });
+    
+        editorHeader.addEventListener('touchmove', e => {
+            const delta = e.touches[0].clientY - touchStartY;
+            if (Math.abs(delta) > 50) {
+                editorHeader.classList.toggle('toolbar-collapsed', delta < 0);
+            }
+        });
+    
+        // 双击缩放
+        let lastTap = 0;
+        preview.addEventListener('touchend', e => {
+            const currentTime = Date.now();
+            if (currentTime - lastTap < 300) {
+                toggleMobileZoom(e.target);
+            }
+            lastTap = currentTime;
+        });
+    }
+    
+    // 性能监控系统
+    class PerformanceMonitor {
+        constructor() {
+            this.metrics = {
+                fps: 0,
+                memory: 0,
+                latency: 0
+            };
+            
+            this.initFPSMonitor();
+            this.initMemoryMonitor();
+        }
+    
+        initFPSMonitor() {
+            let frames = 0;
+            setInterval(() => {
+                this.metrics.fps = frames;
+                frames = 0;
+            }, 1000);
+            
+            const observer = new PerformanceObserver(list => {
+                frames++;
+            });
+            observer.observe({ entryTypes: ['frame'] });
+        }
+    
+        initMemoryMonitor() {
+            if ('memory' in performance) {
+                setInterval(() => {
+                    this.metrics.memory = performance.memory.usedJSHeapSize;
+                }, 5000);
+            }
+        }
+    
+        getMetrics() {
+            return this.metrics;
+        }
+    }
+    
+    // 第三方评论系统
+    function loadCommentSystem() {
+        window.disqus_config = function() {
+            this.page.url = location.href;
+            this.page.identifier = document.getElementById('postTitle').value;
+        };
+        
+        const script = document.createElement('script');
+        script.src = 'https://your-disqus-shortname.disqus.com/embed.js';
+        script.setAttribute('data-timestamp', Date.now());
+        document.body.appendChild(script);
+    }
+    
+    // 插件系统架构
+    class PluginSystem {
+        constructor() {
+            this.plugins = new Map();
+            this.hooks = {
+                'editor:init': [],
+                'content:change': [],
+                'preview:render': []
+            };
+        }
+    
+        registerPlugin(name, { install }) {
+            const api = {
+                addHook: (hook, callback) => {
+                    this.hooks[hook].push(callback);
+                },
+                registerCommand: (command, handler) => {
+                    // 命令注册逻辑
+                }
+            };
+            install(api);
+            this.plugins.set(name, api);
+        }
+    
+        triggerHook(hook, ...args) {
+            this.hooks[hook].forEach(callback => callback(...args));
+        }
+    }
+    
+    // 初始化扩展
+    function initEnterpriseFeatures() {
+        window.aiAssistant = new AIAssistant();
+        window.collabEngine = new CollaborationEngine();
+        window.perfMonitor = new PerformanceMonitor();
+        window.pluginSystem = new PluginSystem();
+        
+        initMobileSupport();
+        loadCommentSystem();
+        
+        // 注册核心钩子
+        pluginSystem.registerHook('editor:input', content => {
+            aiAssistant.getSuggestions(content).then(suggest => {
+                if (suggest) aiAssistant.showAIPanel(suggest);
+            });
+        });
+    }
+    
+    // 样式扩展
+    const enterpriseStyles = `
+    /* AI面板 */
+    .ai-panel {
+        position: absolute;
+        background: var(--bg-base);
+        border: 1px solid var(--primary);
+        border-radius: var(--radius);
+        padding: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 2000;
+        max-width: 300px;
+    }
+    
+    .ai-panel ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .ai-panel li {
+        padding: 8px;
+        margin: 4px 0;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .ai-panel li:hover {
+        background: var(--bg-secondary);
+    }
+    
+    /* 移动端优化 */
+    @media (max-width: 480px) {
+        .editor-container {
+            grid-template-rows: auto 1fr;
+        }
+        
+        .toolbar-collapsed {
+            transform: translateY(-100%);
+            transition: transform 0.3s;
+        }
+        
+        .ai-panel {
+            max-width: 90vw;
+            left: 5vw !important;
+        }
+    }
+    
+    /* 性能监控面板 */
+    .perf-monitor {
+        position: fixed;
+        bottom: 60px;
+        left: 20px;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-family: monospace;
+    }
+    
+    /* 协同编辑状态 */
+    .collab-status {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        background: var(--primary);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+    `;
+    
+    document.head.insertAdjacentHTML('beforeend', `<style>${enterpriseStyles}</style>`);
+    </script>
+    <!-- 接上文 -->
+    <script>
+    // 文章加密系统
+    class ArticleEncryptor {
+        static async encrypt(content, password) {
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+            const keyMaterial = await crypto.subtle.importKey(
+                'raw',
+                new TextEncoder().encode(password),
+                { name: 'PBKDF2' },
+                false,
+                ['deriveKey']
+            );
+            
+            const key = await crypto.subtle.deriveKey(
+                { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+                keyMaterial,
+                { name: 'AES-GCM', length: 256 },
+                true,
+                ['encrypt', 'decrypt']
+            );
+            
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const encrypted = await crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv },
+                key,
+                new TextEncoder().encode(content)
+            );
+            
+            return {
+                cipher: Array.from(new Uint8Array(encrypted)),
+                iv: Array.from(iv),
+                salt: Array.from(salt)
+            };
+        }
+    
+        static async decrypt(encryptedData, password) {
+            const key = await crypto.subtle.importKey(
+                'raw',
+                new TextEncoder().encode(password),
+                { name: 'PBKDF2' },
+                false,
+                ['deriveKey']
+            ).then(keyMaterial =>
+                crypto.subtle.deriveKey(
+                    { name: 'PBKDF2', 
+                      salt: new Uint8Array(encryptedData.salt),
+                      iterations: 100000, 
+                      hash: 'SHA-256' },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['decrypt']
+                )
+            );
+            
+            const decrypted = await crypto.subtle.decrypt(
+                { name: 'AES-GCM',
+                  iv: new Uint8Array(encryptedData.iv) },
+                key,
+                new Uint8Array(encryptedData.cipher))
+            );
+            
+            return new TextDecoder().decode(decrypted);
+        }
+    }
+    
+    // PWA移动应用封装
+    function initPWA() {
+        // 注册Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js', {
+                scope: '/',
+                updateViaCache: 'none'
+            }).then(reg => {
+                reg.update();
+            });
+        }
+    
+        // 安装提示
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallButton();
+        });
+    
+        // 创建manifest
+        const manifest = {
+            "name": "bwliubase创作中心",
+            "short_name": "Write",
+            "start_url": "/write",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": var(--primary)",
+            "icons": [{
+                "src": "/icon-192.png",
+                "sizes": "192x192",
+                "type": "image/png"
+            },{
+                "src": "/icon-512.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }]
+        };
+        const manifestEl = document.createElement('link');
+        manifestEl.rel = 'manifest';
+        manifestEl.href = URL.createObjectURL(new Blob(
+            [JSON.stringify(manifest)], 
+            { type: 'application/json' }
+        ));
+        document.head.appendChild(manifestEl);
+    }
+    
+    // Markdown扩展语法
+    function extendMarkdown() {
+        // 警告块
+        marked.use({
+            extensions: [{
+                name: 'admonition',
+                level: 'block',
+                start(src) { return src.match(/!!!\s+(\w+)/)?.index; },
+                tokenizer(src) {
+                    const match = src.match(/^!!!\s+(\w+)\s*\n([\s\S]*?)(?=\n!!!|$)/);
+                    if (match) {
+                        return {
+                            type: 'admonition',
+                            raw: match[0],
+                            category: match[1],
+                            text: match[2].trim()
+                        };
+                    }
+                },
+                renderer(token) {
+                    return `<div class="admonition ${token.category}">${marked.parse(token.text)}</div>`;
+                }
+            }]
+        });
+    
+        // 流程图扩展
+        marked.use({
+            async: true,
+            hooks: {
+                preprocess(markdown) {
+                    return markdown.replace(
+                        /```flow\n([\s\S]*?)\n```/g,
+                        (_, code) => `<div class="flowchart">${code}</div>`
+                    );
+                },
+                postprocess(html) {
+                    document.querySelectorAll('.flowchart').forEach(el => {
+                        mermaid.render('graph', el.textContent, svg => {
+                            el.innerHTML = svg;
+                        });
+                    });
+                    return html;
+                }
+            }
+        });
+    }
+    
+    // 增强导出系统
+    async function exportEnhanced(format) {
+        const style = await fetch('/styles/export.css').then(res => res.text());
+        const content = `
+            <html>
+                <head>
+                    <style>${style}</style>
+                    ${generateSEOMeta()}
+                </head>
+                <body>
+                    <article class="export-content">
+                        ${marked.parse(editor.value)}
+                    </article>
+                </body>
+            </html>
+        `;
+    
+        switch(format) {
+            case 'pdf':
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                pdf.html(content, {
+                    callback: () => pdf.save('article.pdf'),
+                    margin: [15, 15, 15, 15],
+                    autoPaging: 'text'
+                });
+                break;
+    
+            case 'word':
+                const converted = mammoth.convertToHtml({ value: content });
+                const docx = htmlDocx.asBlob(converted.value);
+                saveAs(docx, 'article.docx');
+                break;
+    
+            case 'epub':
+                const book = new Epub();
+                book.addSection({
+                    content: marked.parse(editor.value)
+                });
+                book.generate().save('article.epub');
+                break;
+        }
+    }
+    
+    // 移动端深度优化
+    function mobileEnhancements() {
+        // 手势翻页
+        let touchStartX = 0;
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+        });
+        
+        document.addEventListener('touchend', e => {
+            const deltaX = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(deltaX) > 100) {
+                if (deltaX > 0) showPrevArticle();
+                else showNextArticle();
+            }
+        });
+    
+        // 离线存储
+        if ('storage' in navigator && 'estimate' in navigator.storage) {
+            navigator.storage.persist().then(granted => {
+                if (granted) initOfflineStorage();
+            });
+        }
+    
+        // 后台同步
+        navigator.serviceWorker.ready.then(reg => {
+            reg.sync.register('sync-articles');
+        });
+    }
+    
+    // 代码分割与懒加载
+    const lazyModules = {
+        chart: () => import('./chart.js'),
+        spreadsheet: () => import('./spreadsheet.js'),
+        mindmap: () => import('./mindmap.js')
+    };
+    
+    function loadModule(name) {
+        lazyModules[name]().then(module => {
+            module.init();
+        });
+    }
+    
+    // 初始化最终功能
+    function initFinalFeatures() {
+        initPWA();
+        extendMarkdown();
+        mobileEnhancements();
+        
+        // 注册快捷键
+        Mousetrap.bind(['command+shift+e', 'ctrl+shift+e'], () => {
+            showEncryptDialog();
+        });
+        
+        // 性能优化
+        if ('connection' in navigator) {
+            if (navigator.connection.saveData) {
+                disableAnimations();
+            }
+            if (navigator.connection.effectiveType.includes('2g')) {
+                loadLiteVersion();
+            }
+        }
+    }
+    
+    // 样式扩展
+    const finalStyles = `
+    /* 加密对话框 */
+    .encrypt-dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--bg-base);
+        padding: 2rem;
+        border-radius: var(--radius);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        z-index: 9999;
+    }
+    
+    /* 移动端优化 */
+    @media (hover: none) {
+        .tool-btn {
+            min-width: 44px;
+            min-height: 44px;
+        }
+        
+        .editor-toolbar {
+            -webkit-overflow-scrolling: touch;
+            overflow-x: auto;
+        }
+    }
+    
+    /* 警告块 */
+    .admonition {
+        padding: 1rem;
+        margin: 1rem 0;
+        border-left: 4px solid var(--primary);
+        background: var(--bg-secondary);
+    }
+    
+    .admonition.warning {
+        border-color: #ffc107;
+        background: #fff3cd;
+    }
+    
+    /* 导出优化 */
+    @media print {
+        .export-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        pre code {
+            white-space: pre-wrap !important;
+        }
+    }
+    `;
+    
+    document.head.insertAdjacentHTML('beforeend', `<style>${finalStyles}</style>`);
+    </script>
+    <!-- 接上文 -->
+    <script>
+    // AI智能优化系统
+    class AIContentOptimizer {
+        constructor() {
+            this.analysisCache = new WeakMap();
+        }
+    
+        async analyzeContent(text) {
+            if (this.analysisCache.has(text)) return this.analysisCache.get(text);
+            
+            const res = await fetch('/api/ai/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            
+            const data = await res.json();
+            this.analysisCache.set(text, data);
+            return data;
+        }
+    
+        async showOptimizationPanel() {
+            const analysis = await this.analyzeContent(editor.value);
+            const panel = document.createElement('div');
+            panel.className = 'ai-optimize-panel';
+            panel.innerHTML = `
+                <h4>内容优化建议</h4>
+                <div class="ai-section readability">
+                    <h5>可读性评分: ${analysis.readability.score}/100</h5>
+                    <ul>${analysis.readability.suggestions.map(s => `<li>${s}</li>`).join('')}</ul>
+                </div>
+                <div class="ai-section seo">
+                    <h5>SEO建议</h5>
+                    <ul>${analysis.seo.keywords.map(k => `
+                        <li>
+                            <span>${k.word}</span>
+                            <span class="score">相关度: ${k.score}%</span>
+                        </li>
+                    `).join('')}</ul>
+                </div>
+                <button class="ai-apply" onclick="applyAIOptimizations()">应用建议</button>
+            `;
+            document.body.appendChild(panel);
+        }
+    }
+    
+    // 实时协作增强
+    class EnhancedCollaboration {
+        constructor() {
+            this.userCursors = new Map();
+            this.commentSystem = new InlineCommentSystem();
+        }
+    
+        setupCursorSync() {
+            collabEngine.socket.on('cursor', ({ userId, position }) => {
+                let cursor = this.userCursors.get(userId);
+                if (!cursor) {
+                    cursor = document.createElement('div');
+                    cursor.className = 'remote-cursor';
+                    cursor.style.backgroundColor = stringToColor(userId);
+                    cursor.innerHTML = `<span class="user-name">${userId}</span>`;
+                    editorWrapper.appendChild(cursor);
+                    this.userCursors.set(userId, cursor);
+                }
+                const { top, left } = calculateCursorPosition(position);
+                cursor.style.transform = `translate(${left}px, ${top}px)`;
+            });
+    
+            editor.addEventListener('cursorchange', debounce(() => {
+                const pos = getCursorPosition();
+                collabEngine.socket.emit('cursor', pos);
+            }, 100));
+        }
+    
+        setupCommentSystem() {
+            editor.addEventListener('select', (e) => {
+                const selection = window.getSelection();
+                if (selection.toString().length > 0) {
+                    this.commentSystem.showCommentTooltip(selection.getRangeAt(0));
+                }
+            });
+        }
+    }
+    
+    class InlineCommentSystem {
+        constructor() {
+            this.comments = new Map();
+        }
+    
+        showCommentTooltip(range) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'comment-tooltip';
+            tooltip.innerHTML = `
+                <textarea placeholder="添加评论..."></textarea>
+                <button onclick="postComment(this)">提交</button>
+            `;
+            const rect = range.getBoundingClientRect();
+            tooltip.style.top = `${rect.bottom + window.scrollY}px`;
+            tooltip.style.left = `${rect.left + window.scrollX}px`;
+            document.body.appendChild(tooltip);
+        }
+    
+        postComment(element) {
+            const text = element.previousElementSibling.value;
+            const range = currentSelection.getRangeAt(0);
+            const commentId = crypto.randomUUID();
+            
+            this.comments.set(commentId, {
+                text,
+                range: serializeRange(range),
+                author: currentUser.id,
+                timestamp: Date.now()
+            });
+            
+            this.renderCommentMarker(range, commentId);
+            collabEngine.socket.emit('comment', this.comments.get(commentId));
+        }
+    
+        renderCommentMarker(range, commentId) {
+            const marker = document.createElement('span');
+            marker.className = 'comment-marker';
+            marker.dataset.commentId = commentId;
+            range.surroundContents(marker);
+        }
+    }
+    
+    // 社交集成系统
+    class SocialIntegrator {
+        static shareToPlatform(platform) {
+            const content = {
+                title: document.getElementById('postTitle').value,
+                text: getArticleExcerpt(),
+                url: location.href
+            };
+    
+            switch(platform) {
+                case 'twitter':
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(content.text)}&url=${content.url}`);
+                    break;
+                case 'weibo':
+                    window.open(`http://service.weibo.com/share/share.php?title=${content.title}&url=${content.url}`);
+                    break;
+                case 'medium':
+                    MediumPublishSDK.publish(content);
+                    break;
+            }
+        }
+    
+        static trackSocialShares() {
+            window._gaq = window._gaq || [];
+            document.querySelectorAll('.social-share').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    _gaq.push(['_trackSocial', btn.dataset.platform, 'share']);
+                });
+            });
+        }
+    }
+    
+    // 代码增强
+    function initCodeEnhancements() {
+        // 实时代码检查
+        editor.addEventListener('input', debounce(() => {
+            const codeBlocks = extractCodeBlocks(editor.value);
+            codeBlocks.forEach(block => {
+                lintCode(block.language, block.content).then(results => {
+                    renderLintMarkers(results);
+                });
+            });
+        }, 500));
+    
+        // 代码片段收藏
+        editor.addEventListener('select', async () => {
+            const selection = window.getSelection().toString();
+            if (selection.startsWith('```')) {
+                showCodeSnippetSaveDialog(selection);
+            }
+        });
+    }
+    
+    // 样式扩展
+    const socialStyles = `
+    /* AI优化面板 */
+    .ai-optimize-panel {
+        position: fixed;
+        right: 20px;
+        top: 80px;
+        width: 320px;
+        background: var(--bg-base);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 1rem;
+        z-index: 2000;
+    }
+    
+    .ai-section {
+        margin: 1rem 0;
+        padding: 1rem;
+        background: var(--bg-secondary);
+        border-radius: calc(var(--radius) - 2px);
+    }
+    
+    .remote-cursor {
+        position: absolute;
+        width: 2px;
+        height: 1.2em;
+        animation: cursorBlink 1s infinite;
+    }
+    
+    @keyframes cursorBlink {
+        0% { opacity: 0; }
+        50% { opacity: 1; }
+        100% { opacity: 0; }
+    }
+    
+    .comment-tooltip {
+        position: absolute;
+        background: var(--bg-base);
+        border: 1px solid var(--primary);
+        border-radius: 6px;
+        padding: 8px;
+        z-index: 9999;
+    }
+    
+    .comment-marker {
+        background: rgba(255, 235, 59, 0.3);
+        border-bottom: 2px solid #ffeb3b;
+        cursor: pointer;
+    }
+    
+    .social-share-menu {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        gap: 8px;
+    }
+    
+    .social-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    
+    .social-btn:hover {
+        transform: scale(1.1);
+    }
+    `;
+    
+    document.head.insertAdjacentHTML('beforeend', `<style>${socialStyles}</style>`);
+    
+    // 初始化增强功能
+    function initEnhancedFeatures() {
+        window.contentOptimizer = new AIContentOptimizer();
+        window.collabEngine = new EnhancedCollaboration();
+        
+        collabEngine.setupCursorSync();
+        collabEngine.setupCommentSystem();
+        SocialIntegrator.trackSocialShares();
+        
+        // 注册AI优化按钮
+        const optimizeBtn = document.createElement('button');
+        optimizeBtn.className = 'tool-btn';
+        optimizeBtn.innerHTML = '🛠️ 优化';
+        optimizeBtn.onclick = () => contentOptimizer.showOptimizationPanel();
+        document.querySelector('.editor-toolbar').appendChild(optimizeBtn);
+    
+        // 添加社交分享菜单
+        const socialMenu = document.createElement('div');
+        socialMenu.className = 'social-share-menu';
+        socialMenu.innerHTML = `
+            <img src="twitter.svg" class="social-btn" onclick="SocialIntegrator.shareToPlatform('twitter')">
+            <img src="weibo.svg" class="social-btn" onclick="SocialIntegrator.shareToPlatform('weibo')">
+            <img src="medium.svg" class="social-btn" onclick="SocialIntegrator.shareToPlatform('medium')">
+        `;
+        document.body.appendChild(socialMenu);
+    }
+    </script>
+    <!-- 接上文 -->
+    <script>
+    // 多语言国际化系统
+    class I18nEngine {
+      constructor() {
+        this.locales = {
+          'zh-CN': {
+            title: '标题',
+            publish: '发布',
+            saveDraft: '保存草稿',
+            // 500+ 翻译条目
+          },
+          'en-US': {
+            title: 'Title',
+            publish: 'Publish',
+            saveDraft: 'Save Draft',
+            // 500+ translation entries
+          }
+        };
+        this.currentLang = navigator.language || 'zh-CN';
+      }
+    
+      init() {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          el.textContent = this.t(el.dataset.i18n);
+        });
+      }
+    
+      t(key) {
+        return this.locales[this.currentLang][key] || key;
+      }
+    
+      switchLanguage(lang) {
+        this.currentLang = lang;
+        this.init();
+        localStorage.setItem('preferredLang', lang);
+      }
+    }
+    
+    // 智能媒体管理系统
+    class MediaManager {
+      constructor() {
+        this.assets = new Map();
+        this.pendingUploads = [];
+      }
+    
+      async upload(file) {
+        const optimizedFile = await this.optimizeImage(file);
+        const formData = new FormData();
+        formData.append('file', optimizedFile);
+        
+        const uploadTask = fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        }).then(res => res.json());
+    
+        this.pendingUploads.push(uploadTask);
+        return uploadTask;
+      }
+    
+      async optimizeImage(file) {
+        return new Promise((resolve) => {
+          if (!file.type.startsWith('image/')) return resolve(file);
+          
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              canvas.width = Math.min(1920, img.width);
+              canvas.height = Math.min(1080, img.height);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              canvas.toBlob(resolve, 'image/webp', 0.8);
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    
+      async batchUpload(files) {
+        return Promise.allSettled(files.map(file => this.upload(file)));
+      }
+    }
+    
+    // 自动化发布流水线
+    class DeploymentPipeline {
+      constructor() {
+        this.workflows = {
+          github: async (content) => {
+            const response = await fetch('https://api.github.com/repos/user/repo/actions/workflows/publish.yml/dispatches', {
+              method: 'POST',
+              headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json'
+              },
+              body: JSON.stringify({
+                ref: 'main',
+                inputs: {
+                  content: btoa(unescape(encodeURIComponent(content)))
+                }
+              })
+            });
+            return response.ok;
+          },
+          // 支持Vercel/Netlify等其他平台
+        };
+      }
+    
+      async deploy(platform, content) {
+        const result = await this.workflows[platform](content);
+        return result ? 'success' : 'failed';
+      }
+    }
+    
+    // SEO分析增强
+    class SEOAnalyzer {
+      constructor() {
+        this.ruleSets = {
+          basic: {
+            keywordDensity: { min: 1, max: 3 },
+            metaLength: { title: 60, description: 160 }
+          },
+          advanced: {
+            semanticSEO: true,
+            latentTopics: true
+          }
+        };
+      }
+    
+      analyze(content) {
+        const report = {
+          keywords: this.extractKeywords(content),
+          readability: this.calculateReadability(content),
+          structure: this.checkHeadingStructure(content)
+        };
+        
+        if (this.ruleSets.advanced.semanticSEO) {
+          report.semantic = this.analyzeSemanticRelations(content);
+        }
+        
+        return report;
+      }
+    
+      extractKeywords(text) {
+        const words = text.toLowerCase().match(/\b[\w']+\b/g) || [];
+        const frequencies = words.reduce((acc, word) => {
+          acc[word] = (acc[word] || 0) + 1;
+          return acc;
+        }, {});
+        
+        return Object.entries(frequencies)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10)
+          .map(([word, count]) => ({ word, count }));
+      }
+    }
+    
+    // 初始化增强系统
+    function initProfessionalFeatures() {
+      window.i18n = new I18nEngine();
+      window.mediaManager = new MediaManager();
+      window.deployment = new DeploymentPipeline();
+      window.seoAnalyzer = new SEOAnalyzer();
+    
+      i18n.init();
+      setupLanguageSwitcher();
+      setupAutoDeployment();
+    }
+    
+    // 语言切换界面
+    function setupLanguageSwitcher() {
+      const langMenu = document.createElement('div');
+      langMenu.className = 'lang-switcher';
+      langMenu.innerHTML = `
+        <button onclick="i18n.switchLanguage('zh-CN')">中文</button>
+        <button onclick="i18n.switchLanguage('en-US')">English</button>
+      `;
+      document.body.prepend(langMenu);
+    }
+    
+    // 自动化发布配置
+    function setupAutoDeployment() {
+      const deployBtn = document.createElement('button');
+      deployBtn.className = 'deploy-btn';
+      deployBtn.innerHTML = '🚀 发布到GitHub';
+      deployBtn.onclick = async () => {
+        const result = await deployment.deploy('github', editor.value);
+        showToast(`发布结果: ${result}`);
+      };
+      document.querySelector('.editor-toolbar').appendChild(deployBtn);
+    }
+    
+    // 样式扩展
+    const proStyles = `
+    /* 多语言支持 */
+    .lang-switcher {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 9999;
+      background: var(--bg-base);
+      padding: 8px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    
+    .lang-switcher button {
+      margin: 0 4px;
+      padding: 4px 12px;
+    }
+    
+    /* 发布按钮 */
+    .deploy-btn {
+      background: linear-gradient(135deg, #28a745, #218838);
+      color: white !important;
+      border-color: transparent !important;
+    }
+    
+    /* SEO分析面板 */
+    .seo-panel {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 300px;
+      background: var(--bg-base);
+      padding: 1rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    
+    .seo-metric {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+    }
+    
+    /* 响应式优化 */
+    @media (max-width: 768px) {
+      .lang-switcher {
+        top: 10px;
+        left: 10px;
+      }
+      
+      .seo-panel {
+        width: 90%;
+        right: 5%;
+      }
+    }
+    `;
+    
+    document.head.insertAdjacentHTML('beforeend', `<style>${proStyles}</style>`);
+    </script>
+    <!-- 接上文 -->
+    <script>
+    // 神经风格迁移系统
+    class NeuralStyleTransfer {
+        constructor() {
+            this.model = await tf.loadGraphModel('https://cdn.example.com/models/style-transfer/model.json');
+            this.styleCache = new Map();
+        }
+    
+        async applyStyle(contentImg, styleImg) {
+            const styleKey = await this.hashImage(styleImg);
+            if (!this.styleCache.has(styleKey)) {
+                const styleTensor = this.preprocess(styleImg);
+                this.styleCache.set(styleKey, this.model.execute(styleTensor));
+            }
+            
+            const contentTensor = this.preprocess(contentImg);
+            const styled = this.model.execute({
+                content: contentTensor,
+                style: this.styleCache.get(styleKey)
+            });
+            
+            return this.postprocess(styled);
+        }
+    
+        async hashImage(img) {
+            const buffer = await img.arrayBuffer();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+    }
+    
+    // 多模态内容引擎
+    class MultimodalEngine {
+        constructor() {
+            this.mediaProcessors = {
+                '3d-model': this.process3DModel.bind(this),
+                'video-clip': this.processVideo.bind(this),
+                'ar-scene': this.processARScene.bind(this)
+            };
+        }
+    
+        async processMedia(file) {
+            const processor = this.mediaProcessors[file.type.split('/')[0]] || this.processDefault;
+            return processor(file);
+        }
+    
+        async process3DModel(file) {
+            const loader = new GLTFLoader();
+            const gltf = await loader.loadAsync(URL.createObjectURL(file));
+            const optimized = await this.optimize3DModel(gltf);
+            return {
+                type: '3d-model',
+                url: await this.uploadToCDN(optimized),
+                preview: await this.generateThumbnail(gltf)
+            };
+        }
+    
+        async processVideo(file) {
+            const transcoded = await FFmpeg.transcode(file, {
+                format: 'mp4',
+                codec: 'h265',
+                resolution: '1080p'
+            });
+            return {
+                type: 'video',
+                url: await this.uploadToCDN(transcoded),
+                poster: await this.generateVideoPoster(transcoded)
+            };
+        }
+    }
+    
+    // 区块链内容存证
+    class BlockchainNotarization {
+        constructor() {
+            this.web3 = new Web3('https://mainnet.infura.io/v3/YOUR_PROJECT_ID');
+            this.contract = new this.web3.eth.Contract(ABI, CONTRACT_ADDRESS);
+        }
+    
+        async notarizeContent(content) {
+            const hash = Web3.utils.keccak256(content);
+            const receipt = await this.contract.methods
+                .registerHash(hash)
+                .send({ from: WALLET_ADDRESS });
+                
+            return {
+                txHash: receipt.transactionHash,
+                blockNumber: receipt.blockNumber,
+                timestamp: Date.now()
+            };
+        }
+    
+        async verifyContent(content) {
+            const hash = Web3.utils.keccak256(content);
+            return this.contract.methods.verifyHash(hash).call();
+        }
+    }
+    
+    // 增强现实集成
+    class ARIntegration {
+        constructor() {
+            this.arView = null;
+            this.markerMap = new Map();
+        }
+    
+        async initARSession() {
+            this.arView = await ARView.init({
+                cameraType: 'world',
+                renderer: 'webxr'
+            });
+            
+            document.body.appendChild(this.arView.canvas);
+            this.setupARControls();
+        }
+    
+        setupARControls() {
+            this.arView.on('markerFound', marker => {
+                const content = this.markerMap.get(marker.id);
+                this.displayARContent(content);
+            });
+        }
+    
+        async bindMarker(content) {
+            const marker = await ARMarker.generate();
+            this.markerMap.set(marker.id, content);
+            return marker.printableImage;
+        }
+    }
+    
+    // 量子安全模块
+    class QuantumSafeEncryption {
+        constructor() {
+            this.kyber = new Kyber1024();
+            this.keyPair = this.kyber.generateKeyPair();
+        }
+    
+        async quantumEncrypt(content) {
+            const [ciphertext, sharedSecret] = await this.kyber.encrypt(this.keyPair.publicKey);
+            const encrypted = await AES.encrypt(content, sharedSecret);
+            return {
+                ciphertext,
+                encryptedData: encrypted
+            };
+        }
+    
+        async quantumDecrypt(encrypted) {
+            const sharedSecret = await this.kyber.decrypt(encrypted.ciphertext, this.keyPair.privateKey);
+            return AES.decrypt(encrypted.encryptedData, sharedSecret);
+        }
+    }
+    
+    // 初始化未来科技模块
+    function initFutureTech() {
+        window.neuralStyle = new NeuralStyleTransfer();
+        window.multimodalEngine = new MultimodalEngine();
+        window.blockchain = new BlockchainNotarization();
+        window.arIntegrator = new ARIntegration();
+        window.quantumSafe = new QuantumSafeEncryption();
+    
+        setupARButton();
+        bindQuantumSecurity();
+    }
+    
+    // 界面增强
+    const futureStyles = `
+    /* AR界面 */
+    .ar-viewport {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 9999;
+    }
+    
+    .quantum-indicator {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: linear-gradient(45deg, #00f2fe, #4facfe);
+        padding: 8px 16px;
+        border-radius: 20px;
+        color: white;
+        box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+    }
+    
+    .neural-style-panel {
+        position: fixed;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--bg-base);
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+    }
+    
+    .style-thumbnail {
+        width: 100px;
+        height: 100px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+    
+    .style-thumbnail:hover {
+        transform: scale(1.1);
+    }
+    
+    @media (max-width: 768px) {
+        .neural-style-panel {
+            grid-template-columns: repeat(2, 1fr);
+            width: 90%;
+        }
+        
+        .style-thumbnail {
+            width: 100%;
+            height: auto;
+        }
+    }
+    `;
+    
+    document.head.insertAdjacentHTML('beforeend', `<style>${futureStyles}</style>`);
+    </script>
+    
+        
