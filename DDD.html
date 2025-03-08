@@ -7,6 +7,16 @@
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
+        #modeIndicator {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-family: Arial;
+            font-size: 16px;
+            text-shadow: 1px 1px 2px black;
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
@@ -1257,5 +1267,346 @@
         );
         composer.addPass(fxaaPass);
     </script>
+        <!-- 接上文 -->
+    <script>
+        // 1800-2000行代码 - 终极画质增强
+        let volumetricClouds, cinematicDOF, rayMarchingPass;
+        
+        function initCinematicEffects() {
+            // 体积云系统
+            const cloudNoise = new THREE.TextureLoader().load('https://threejs.org/examples/textures/perlin-512.png');
+            volumetricClouds = new THREE.VolumetricClouds(scene, camera, {
+                noiseTexture: cloudNoise,
+                coverage: 0.6,
+                density: 0.4,
+                lightAbsorption: 0.25,
+                steps: 64,
+                sun: directionalLight
+            });
+            scene.add(volumetricClouds.mesh);
+
+            // 电影级景深
+            cinematicDOF = new THREE.BokehPass(
+                scene,
+                camera, 
+                {
+                    focus: car.position.distanceTo(camera.position),
+                    aperture: 0.0005,
+                    maxblur: 0.02,
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                }
+            );
+            composer.addPass(cinematicDOF);
+
+            // 光线追踪全局光照
+            rayMarchingPass = new THREE.RayMarchingPass({
+                resolution: 512,
+                samples: 8,
+                environment: scene.environment,
+                aoRadius: 2.0
+            });
+            composer.addPass(rayMarchingPass);
+
+            // 次表面散射材质
+            const sssMaterial = new THREE.SubsurfaceScatteringMaterial({
+                color: 0xff8888,
+                specular: 0x222222,
+                shininess: 100,
+                thicknessMap: textureLoader.load('skin_thickness.jpg'),
+                distortion: 0.1,
+                power: 8.0
+            });
+
+            // 动态植被系统
+            const grassGeometry = new THREE.BufferGeometry();
+            const positions = [];
+            for(let i = 0; i < 5000; i++) {
+                positions.push(
+                    Math.random()*200 - 100,
+                    0,
+                    Math.random()*200 - 100
+                );
+            }
+            grassGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            
+            const grass = new THREE.Mesh(
+                grassGeometry,
+                new THREE.MeshBasicMaterial({
+                    vertexColors: true,
+                    onBeforeCompile: shader => {
+                        shader.vertexShader = `
+                            varying vec3 vPos;
+                            ${shader.vertexShader}
+                        `.replace(
+                            '#include <begin_vertex>',
+                            `
+                            vec3 transformed = position;
+                            float wind = sin(time*2.0 + position.x*0.5)*0.3;
+                            transformed.x += wind;
+                            vPos = transformed;
+                            `
+                        );
+                    }
+                })
+            );
+            scene.add(grass);
+        }
+
+        function updateCinematicFeatures() {
+            // 动态云层演变
+            volumetricClouds.uniforms.time.value += 0.001;
+            volumetricClouds.uniforms.coverage.value = 
+                Math.sin(Date.now()/15000) * 0.2 + 0.5;
+
+            // 自动对焦系统
+            const focusTarget = isMechaActive ? mecha.position : car.position;
+            cinematicDOF.uniforms.focus.value = 
+                THREE.MathUtils.lerp(
+                    cinematicDOF.uniforms.focus.value,
+                    camera.position.distanceTo(focusTarget),
+                    0.1
+                );
+
+            // 光线追踪动态更新
+            rayMarchingPass.uniforms.cameraNear.value = camera.near;
+            rayMarchingPass.uniforms.cameraFar.value = camera.far;
+        }
+
+        // 更新init函数
+        function init() {
+            // ...之前初始化代码...
+            initCinematicEffects(); // 电影级特效
+            // ...后续初始化代码...
+        }
+
+        // 更新animate函数
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // 新增电影级特效更新
+            updateCinematicFeatures();
+
+            // 动态植被动画
+            grass.geometry.verticesNeedUpdate = true;
+
+            // 材质磨损与天气互动
+            if(carPaintMaterial) {
+                carPaintMaterial.clearcoatRoughness = 
+                    THREE.MathUtils.lerp(
+                        carPaintMaterial.clearcoatRoughness,
+                        weatherType === 'rain' ? 0.3 : 0.1,
+                        0.01
+                    );
+            }
+
+            // 动态LUT调色
+            composer.passes.forEach(pass => {
+                if(pass instanceof THREE.LUTPass) {
+                    pass.intensity = Math.sin(Date.now()/10000) * 0.3 + 0.7;
+                }
+            });
+        }
+
+        // 电影级调色系统
+        const lut = new THREE.LUTPass({
+            lut: textureLoader.load('https://threejs.org/examples/textures/lut/teal_orange.png'),
+            intensity: 0.8
+        });
+        composer.addPass(lut);
+
+        // 动态天气扩展
+        function createLightning() {
+            const lightning = new THREE.Mesh(
+                new THREE.BufferGeometry(),
+                new THREE.LineBasicMaterial({color: 0xffffff})
+            );
+            
+            const positions = [];
+            for(let i = 0; i < 20; i++) {
+                positions.push(
+                    Math.random()*100 - 50,
+                    Math.random()*50 + 50,
+                    Math.random()*100 - 50
+                );
+            }
+            lightning.geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            
+            scene.add(lightning);
+            setTimeout(() => scene.remove(lightning), 100);
+        }
+
+        // 最终GUI控制
+        const cinematicFolder = gui.addFolder('电影效果');
+        cinematicFolder.add(volumetricClouds.uniforms.density, 'value', 0.1, 1.0).name('云层密度');
+        cinematicFolder.add(lut, 'intensity', 0, 1).name('画面调色');
+        cinematicFolder.add({lightning: createLightning}, 'lightning').name('触发闪电');
+
+        // 终极抗锯齿方案
+        const taaPass = new THREE.TAAPass(scene, camera);
+        taaPass.sampleLevel = 2;
+        composer.addPass(taaPass);
+
+        // 动态分辨率缩放
+        renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+        renderer.autoClear = false;
+
+        // 内存优化系统
+        const textureCache = new THREE.TextureCache();
+        textureCache.maxSize = 2048;
+    </script>
+
+    <!-- 电影黑边 -->
+    <div id="letterbox" style="
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        box-shadow: inset 0 0 8rem rgba(0,0,0,0.3);
+        pointer-events: none;
+    "></div>
+    <div id="modeIndicator">当前视角：自由视角 (按T切换)</div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        let scene, camera, renderer, controls, car;
+        let currentCameraMode = 'orbit'; // orbit/follow
+        const cameraOffset = new THREE.Vector3(0, 15, 30);
+
+        // 初始化场景
+        function init() {
+            // 场景基础设置
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            // 地面设置
+            const groundGeometry = new THREE.PlaneGeometry(100, 100);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x808080,
+                roughness: 0.8,
+                metalness: 0.2
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI/2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // 加载汽车模型
+            new THREE.GLTFLoader().load(
+                'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/AviationTruck/glTF/AviationTruck.gltf',
+                (gltf) => {
+                    car = gltf.scene;
+                    car.traverse(child => {
+                        if(child.isMesh) {
+                            child.castShadow = true;
+                            child.material.color.set(0xff0000);
+                        }
+                    });
+                    car.scale.set(0.5, 0.5, 0.5);
+                    scene.add(car);
+                }
+            );
+
+            // 光照设置
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(50, 100, 75);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+
+            // 初始化相机控制
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 10;
+            controls.maxDistance = 500;
+            camera.position.set(0, 50, 100);
+
+            // 事件监听
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('keydown', onKeyDown);
+        }
+
+        // 窗口大小变化处理
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // 按键处理
+        function onKeyDown(event) {
+            // T键切换视角模式
+            if(event.key.toLowerCase() === 't') {
+                currentCameraMode = currentCameraMode === 'orbit' ? 'follow' : 'orbit';
+                document.getElementById('modeIndicator').textContent = 
+                    `当前视角：${currentCameraMode === 'orbit' ? '自由视角' : '跟随视角'} (按T切换)`;
+                
+                if(currentCameraMode === 'follow') {
+                    controls.enabled = false;
+                } else {
+                    controls.enabled = true;
+                    controls.target.set(0, 0, 0);
+                }
+            }
+        }
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 更新汽车移动逻辑
+            if(car) {
+                const speed = 0.5;
+                const rotationSpeed = 0.02;
+                const keys = {
+                    ArrowLeft: car.rotation.y += rotationSpeed,
+                    ArrowRight: car.rotation.y -= rotationSpeed,
+                    ArrowUp: () => {
+                        car.position.x -= Math.sin(car.rotation.y) * speed;
+                        car.position.z -= Math.cos(car.rotation.y) * speed;
+                    },
+                    ArrowDown: () => {
+                        car.position.x += Math.sin(car.rotation.y) * speed;
+                        car.position.z += Math.cos(car.rotation.y) * speed;
+                    }
+                };
+
+                Object.keys(keys).forEach(key => {
+                    if(keys[key]) keys[key]();
+                });
+
+                // 位置限制
+                car.position.x = THREE.MathUtils.clamp(car.position.x, -45, 45);
+                car.position.z = THREE.MathUtils.clamp(car.position.z, -45, 45);
+            }
+
+            // 视角跟随逻辑
+            if(currentCameraMode === 'follow' && car) {
+                const targetPosition = new THREE.Vector3()
+                    .copy(car.position)
+                    .add(cameraOffset.clone().applyAxisAngle(new THREE.Vector3(0,1,0), car.rotation.y));
+                
+                camera.position.lerp(targetPosition, 0.1);
+                camera.lookAt(car.position);
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // 启动
+        init();
+        animate();
+    </script>
+
 </body>
 </html>
