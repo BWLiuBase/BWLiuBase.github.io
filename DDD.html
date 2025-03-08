@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BW Liu的小世界</title>
+    <title>Three.js Advanced Scene</title>
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
@@ -17,95 +17,486 @@
             text-shadow: 1px 1px 2px black;
             z-index: 100;
         }
+        #hud {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: #00ff00;
+            font-family: Arial;
+            font-size: 18px;
+            text-shadow: 2px 2px 2px black;
+        }
     </style>
 </head>
 <body>
     <div id="modeIndicator">当前视角：自由视角 (按T切换)</div>
+    <div id="hud"></div>
 
-    <!-- 引入 Three.js 库 -->
+    <!-- Three.js核心库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Three.js扩展库 -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/SSAOPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/SSAOShader.js"></script>
+    
+    <!-- 物理引擎 -->
+    <script src="https://cdn.jsdelivr.net/npm/cannon@0.6.2/build/cannon.min.js"></script>
+    
+    <!-- GUI控制器 -->
+    <script src="https://cdn.jsdelivr.net/npm/dat.gui@0.7.7/build/dat.gui.min.js"></script>
 
     <script>
+        // 全局变量
         let scene, camera, renderer, composer, controls;
-        let car, wheelFL, wheelFR, wheelRL, wheelRR;
+        let car, character, physicsWorld, characterBody;
+        let rainParticles, snowParticles, weatherType = 'clear';
+        let cityBuildings = [], npcVehicles = [];
+        let params = { exposure: 1.2, bloomStrength: 0.8 };
+        let isMechaActive = false, isFiring = false;
         const keys = {};
-
-        init();
-        animate();
-
+        const clock = new THREE.Clock();
+        
+        // 初始化场景
         function init() {
-            // Scene setup
+            // 基础场景设置
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x87CEEB);
             
-            // Advanced renderer
-            renderer = new THREE.WebGLRenderer({
-                antialias: true,
-                powerPreference: "high-performance"
-            });
-            renderer.setPixelRatio(window.devicePixelRatio);
+            // 相机设置
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 50, 100);
+            
+            // 渲染器设置
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             document.body.appendChild(renderer.domElement);
-
-            // PBR Camera setup
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-            camera.position.set(8, 4, 12);
-
-            // Post-processing
+            
+            // 后处理
             composer = new THREE.EffectComposer(renderer);
             composer.addPass(new THREE.RenderPass(scene, camera));
             
+            // SSAO效果
             const ssaoPass = new THREE.SSAOPass(scene, camera);
             ssaoPass.kernelRadius = 0.6;
             ssaoPass.minDistance = 0.0001;
             ssaoPass.maxDistance = 0.03;
             composer.addPass(ssaoPass);
-
-            // HDRI Environment
-            const pmremGenerator = new THREE.PMREMGenerator(renderer);
-            pmremGenerator.compileEquirectangularShader();
             
-            new THREE.TextureLoader().load(
-                'https://threejs.org/examples/textures/equirectangular/venice_sunset_1k.hdr',
-                texture => {
-                    const envMap = pmremGenerator.fromEquirectangular(texture).texture;
-                    scene.environment = envMap;
-                    texture.dispose();
+            // 泛光效果
+            const bloomPass = new THREE.UnrealBloomPass(
+                new THREE.Vector2(window.innerWidth, window.innerHeight),
+                1.5, 0.4, 0.85
+            );
+            bloomPass.strength = params.bloomStrength;
+            composer.addPass(bloomPass);
+            
+            // 色调映射
+            const outputPass = new THREE.OutputPass(THREE.ACESFilmicToneMapping);
+            outputPass.toneMappingExposure = params.exposure;
+            composer.addPass(outputPass);
+            
+            // 物理世界初始化
+            physicsWorld = new CANNON.World();
+            physicsWorld.gravity.set(0, -9.82, 0);
+            physicsWorld.solver.iterations = 10;
+            
+            // 地面设置
+            const groundGeometry = new THREE.PlaneGeometry(200, 200, 100, 100);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x88ff88,
+                roughness: 0.9,
+                metalness: 0
+            });
+            
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI/2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            
+            // 街道系统
+            createRoadSystem();
+            
+            // 行道树
+            loadStreetTrees();
+            
+            // 交通标志
+            initTrafficSigns();
+            
+            // 天气系统
+            initWeatherSystem();
+            
+            // 城市建筑
+            generateCity();
+            
+            // NPC车辆
+            initNPCSystem();
+            
+            // 可控制角色
+            loadCharacter();
+            initCharacterControls();
+            initCharacterPhysics();
+            
+            // 汽车模型
+            loadCar();
+            
+            // 机甲系统
+            loadMecha();
+            
+            // 互动灯光
+            initInteractiveLights();
+            
+            // 物理碰撞检测
+            initCollisions();
+            
+            // 相机控制
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.target.set(0, 0, 0);
+            controls.minDistance = 5;
+            controls.maxDistance = 50;
+            controls.enableDamping = true;
+            
+            // 窗口大小调整
+            window.addEventListener('resize', onWindowResize);
+            
+            // 键盘控制
+            window.addEventListener('keydown', (event) => {
+                keys[event.code] = true;
+            });
+            window.addEventListener('keyup', (event) => {
+                keys[event.code] = false;
+            });
+            
+            // GUI控制器
+            initGUI();
+            
+            // 创建HUD
+            createHUD();
+        }
+        
+        // 创建道路系统
+        function createRoadSystem() {
+            const roadMaterial = new THREE.MeshStandardMaterial({
+                color: 0x444444,
+                roughness: 0.7,
+                metalness: 0.1
+            });
+            
+            // 主道路
+            const mainRoad = new THREE.Mesh(
+                new THREE.PlaneGeometry(200, 8),
+                roadMaterial
+            );
+            mainRoad.rotation.x = -Math.PI/2;
+            mainRoad.position.y = 0.02;
+            mainRoad.receiveShadow = true;
+            scene.add(mainRoad);
+            
+            // 道路标记
+            const lineGeometry = new THREE.PlaneGeometry(2, 0.2);
+            const lineMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffff00,
+                emissive: 0xffff00,
+                emissiveIntensity: 0.3
+            });
+            
+            for(let z = -100; z <= 100; z += 20) {
+                const line = new THREE.Mesh(lineGeometry, lineMaterial);
+                line.rotation.x = -Math.PI/2;
+                line.position.set(0, 0.03, z);
+                scene.add(line);
+            }
+        }
+        
+        // 加载行道树
+        function loadStreetTrees() {
+            new THREE.GLTFLoader().load(
+                'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/LowPolyTree.glb',
+                (gltf) => {
+                    const tree = gltf.scene;
+                    tree.traverse(child => {
+                        if(child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+                    
+                    const positions = [
+                        {x: 25, z: -90}, {x: -25, z: -90},
+                        {x: 25, z: 90}, {x: -25, z: 90}
+                    ];
+                    
+                    positions.forEach(pos => {
+                        for(let z = -80; z <= 80; z += 10) {
+                            const clone = tree.clone();
+                            clone.position.set(pos.x, 0, z + pos.z);
+                            clone.scale.set(0.5, 0.5, 0.5);
+                            scene.add(clone);
+                        }
+                    });
                 }
             );
-
-            // Terrain with multiple materials
-            const terrainGeometry = new THREE.PlaneGeometry(200, 200, 100, 100);
-            const materials = [
-                new THREE.MeshStandardMaterial({ // Grass
-                    color: 0x88ff88,
-                    roughness: 0.9,
-                    metalness: 0
-                }),
-                new THREE.MeshStandardMaterial({ // Dirt
-                    color: 0x886633,
-                    roughness: 0.8,
-                    metalness: 0
-                })
+        }
+        
+        // 初始化交通标志
+        function initTrafficSigns() {
+            const trafficLightGeometry = new THREE.BoxGeometry(0.3, 4, 0.3);
+            const poleMaterial = new THREE.MeshStandardMaterial({
+                color: 0x555555,
+                metalness: 0.8
+            });
+            
+            [-35, 35].forEach(xPos => {
+                const pole = new THREE.Mesh(trafficLightGeometry, poleMaterial);
+                pole.position.set(xPos, 2, 0);
+                scene.add(pole);
+                
+                const lightHead = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.4, 0.4, 0.8),
+                    new THREE.MeshStandardMaterial({color: 0x333333})
+                );
+                lightHead.position.set(xPos, 4.5, 0);
+                scene.add(lightHead);
+                
+                const redLight = new THREE.PointLight(0xff0000, 2);
+                redLight.position.set(xPos, 4.8, 0.2);
+                scene.add(redLight);
+                
+                const greenLight = new THREE.PointLight(0x00ff00, 2);
+                greenLight.position.set(xPos, 4.2, 0.2);
+                scene.add(greenLight);
+            });
+        }
+        
+        // 初始化天气系统
+        function initWeatherSystem() {
+            // 雨粒子系统
+            const rainGeometry = new THREE.BufferGeometry();
+            const rainPositions = [];
+            for(let i = 0; i < 5000; i++) {
+                rainPositions.push(
+                    Math.random() * 100 - 50,
+                    Math.random() * 50 + 50,
+                    Math.random() * 100 - 50
+                );
+            }
+            rainGeometry.setAttribute('position', new THREE.Float32BufferAttribute(rainPositions, 3));
+            
+            const rainMaterial = new THREE.PointsMaterial({
+                size: 0.1,
+                color: 0xaaaaaa,
+                transparent: true,
+                opacity: 0.7
+            });
+            rainParticles = new THREE.Points(rainGeometry, rainMaterial);
+            rainParticles.visible = false;
+            scene.add(rainParticles);
+            
+            // 雪粒子系统
+            const snowGeometry = new THREE.BufferGeometry();
+            const snowPositions = [];
+            for(let i = 0; i < 3000; i++) {
+                snowPositions.push(
+                    Math.random() * 100 - 50,
+                    Math.random() * 50 + 50,
+                    Math.random() * 100 - 50
+                );
+            }
+            snowGeometry.setAttribute('position', new THREE.Float32BufferAttribute(snowPositions, 3));
+            
+            const snowMaterial = new THREE.PointsMaterial({
+                size: 0.3,
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.9
+            });
+            snowParticles = new THREE.Points(snowGeometry, snowMaterial);
+            snowParticles.visible = false;
+            scene.add(snowParticles);
+        }
+        
+        // 更新天气
+        function updateWeather() {
+            switch(weatherType) {
+                case 'rain':
+                    rainParticles.visible = true;
+                    snowParticles.visible = false;
+                    scene.fog = new THREE.Fog(0x666666, 50, 100);
+                    break;
+                case 'snow':
+                    snowParticles.visible = true;
+                    rainParticles.visible = false;
+                    scene.fog = new THREE.Fog(0xeeeeee, 30, 80);
+                    break;
+                default:
+                    rainParticles.visible = false;
+                    snowParticles.visible = false;
+                    scene.fog = null;
+            }
+            
+            if(weatherType === 'rain' || weatherType === 'snow') {
+                const particles = weatherType === 'rain' ? rainParticles : snowParticles;
+                const positions = particles.geometry.attributes.position.array;
+                
+                for(let i = 0; i < positions.length; i += 3) {
+                    positions[i+1] -= weatherType === 'rain' ? 2 : 0.5;
+                    if(positions[i+1] < 0) {
+                        positions[i] = Math.random() * 100 - 50;
+                        positions[i+1] = 50;
+                        positions[i+2] = Math.random() * 100 - 50;
+                    }
+                }
+                particles.geometry.attributes.position.needsUpdate = true;
+            }
+        }
+        
+        // 生成城市建筑
+        function generateCity() {
+            const buildingTypes = [
+                { width: 10, depth: 15, minHeight: 20, maxHeight: 50 },
+                { width: 15, depth: 10, minHeight: 30, maxHeight: 60 },
+                { width: 12, depth: 12, minHeight: 25, maxHeight: 55 }
             ];
             
-            const terrain = new THREE.Mesh(terrainGeometry, materials);
-            terrain.rotation.x = -Math.PI/2;
-            terrain.receiveShadow = true;
-            scene.add(terrain);
-
-            // Load sports car
+            for(let x = -200; x <= 200; x += 40) {
+                for(let z = -200; z <= 200; z += 40) {
+                    if(Math.abs(x) < 60 && Math.abs(z) < 60) continue;
+                    
+                    const type = buildingTypes[Math.floor(Math.random() * buildingTypes.length)];
+                    const height = type.minHeight + Math.random() * (type.maxHeight - type.minHeight);
+                    
+                    const geometry = new THREE.BoxGeometry(type.width, height, type.depth);
+                    const material = new THREE.MeshStandardMaterial({
+                        color: new THREE.Color().setHSL(Math.random()*0.1+0.4, 0.3, 0.5),
+                        metalness: 0.2,
+                        roughness: 0.7
+                    });
+                    const building = new THREE.Mesh(geometry, material);
+                    building.castShadow = true;
+                    building.receiveShadow = true;
+                    building.position.set(
+                        x + (Math.random()-0.5)*10,
+                        height/2,
+                        z + (Math.random()-0.5)*10
+                    );
+                    scene.add(building);
+                    cityBuildings.push(building);
+                    
+                    // 窗户细节
+                    const windowGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.1);
+                    const windowMaterial = new THREE.MeshStandardMaterial({
+                        color: 0xffffaa,
+                        emissive: 0xffffee,
+                        emissiveIntensity: Math.random()*0.3
+                    });
+                    
+                    for(let y = 5; y < height-2; y += 4) {
+                        for(let fx = -1; fx <= 1; fx += 2) {
+                            const window = new THREE.Mesh(windowGeometry, windowMaterial);
+                            window.position.set(
+                                building.position.x + fx*(type.width/2 - 0.5),
+                                y,
+                                building.position.z
+                            );
+                            scene.add(window);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 初始化NPC系统
+        function initNPCSystem() {
+            const carModels = [
+                'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/delorean/delorean.glb',
+                'https://cdn.jsdelivr.net/gh/pmndrs/gltfjsx@6.0.2/public/models/sedan.glb'
+            ];
+            
+            for(let i = 0; i < 8; i++) {
+                new THREE.GLTFLoader().load(
+                    carModels[i % 2],
+                    (gltf) => {
+                        const npc = gltf.scene;
+                        npc.traverse(child => {
+                            if(child.isMesh) {
+                                child.material = new THREE.MeshStandardMaterial({
+                                    color: new THREE.Color().setHSL(Math.random(), 0.8, 0.6),
+                                    metalness: 0.7,
+                                    roughness: 0.4
+                                });
+                                child.castShadow = true;
+                            }
+                        });
+                        
+                        const npcBody = new CANNON.Body({
+                            mass: 800,
+                            position: new CANNON.Vec3(
+                                Math.random()*100 - 50,
+                                0.5,
+                                Math.random()*100 - 50
+                            )
+                        });
+                        npcBody.addShape(new CANNON.Box(new CANNON.Vec3(1.5, 0.5, 3)));
+                        physicsWorld.addBody(npcBody);
+                        
+                        npc.position.copy(npcBody.position);
+                        npc.quaternion.copy(npcBody.quaternion);
+                        scene.add(npc);
+                        npcVehicles.push({model: npc, body: npcBody});
+                        
+                        npc.userData = {
+                            currentWP: 0,
+                            waypoints: [
+                                new THREE.Vector3(30, 0, 30),
+                                new THREE.Vector3(-30, 0, 30),
+                                new THREE.Vector3(-30, 0, -30),
+                                new THREE.Vector3(30, 0, -30)
+                            ]
+                        };
+                    }
+                );
+            }
+        }
+        
+        // 更新NPC车辆
+        function updateNPCs() {
+            npcVehicles.forEach(npc => {
+                const target = npc.userData.waypoints[npc.userData.currentWP];
+                const direction = new THREE.Vector3()
+                    .subVectors(target, npc.body.position)
+                    .normalize();
+                
+                const angle = Math.atan2(direction.x, direction.z);
+                npc.body.quaternion.setFromAxisAngle(
+                    new CANNON.Vec3(0,1,0), 
+                    angle
+                );
+                
+                const currentSpeed = npc.body.velocity.length();
+                if(currentSpeed < 8) {
+                    npc.body.velocity.x += direction.x * 0.2;
+                    npc.body.velocity.z += direction.z * 0.2;
+                }
+                
+                if(npc.body.position.distanceTo(target) < 5) {
+                    npc.userData.currentWP = (npc.userData.currentWP + 1) % 4;
+                }
+            });
+        }
+        
+        // 加载汽车模型
+        function loadCar() {
             new THREE.GLTFLoader().load(
                 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/ferrari.glb',
-                gltf => {
+                (gltf) => {
                     car = gltf.scene;
                     car.traverse(child => {
                         if (child.isMesh) {
@@ -118,94 +509,260 @@
                         }
                     });
                     
-                    wheelFL = car.getObjectByName('Wheel_FL');
-                    wheelFR = car.getObjectByName('Wheel_FR');
-                    wheelRL = car.getObjectByName('Wheel_RL');
-                    wheelRR = car.getObjectByName('Wheel_RR');
-                    
                     car.scale.set(0.8, 0.8, 0.8);
                     car.position.set(0, 0.5, 0);
                     scene.add(car);
                 }
             );
-
-            // Street lights
-            const lightGeometry = new THREE.CylinderGeometry(0.1, 0.1, 8);
-            const lightMaterial = new THREE.MeshStandardMaterial({
-                color: 0x555555,
-                metalness: 0.8,
-                roughness: 0.2
+        }
+        
+        // 加载角色模型
+        function loadCharacter() {
+            // 使用一个简单的几何体作为角色（也可以替换为GLTF模型）
+            const characterGeometry = new THREE.CapsuleGeometry(0.3, 0.6, 8, 8);
+            const characterMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x00ff00,
+                roughness: 0.8,
+                metalness: 0.2
             });
-            
-            for(let i = -80; i <= 80; i += 40) {
-                const lightPole = new THREE.Mesh(lightGeometry, lightMaterial);
-                lightPole.castShadow = true;
-                lightPole.position.set(i, 4, 0);
-                scene.add(lightPole);
-                
-                const spotLight = new THREE.SpotLight(0xffee88, 15, 30, Math.PI/6, 0.2);
-                spotLight.position.set(i, 6, 0);
-                spotLight.castShadow = true;
-                spotLight.shadow.mapSize.width = 2048;
-                spotLight.shadow.mapSize.height = 2048;
-                scene.add(spotLight);
-            }
-
-            // Camera controls
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.target.set(0, 1.5, 0);
-            controls.minDistance = 5;
-            controls.maxDistance = 50;
-            controls.enableDamping = true;
-
-            // Input handling
-            window.addEventListener('keydown', e => keys[e.code] = true);
-            window.addEventListener('keyup', e => keys[e.code] = false);
+            character = new THREE.Mesh(characterGeometry, characterMaterial);
+            character.position.set(0, 0.9, 0);
+            character.castShadow = true;
+            scene.add(character);
         }
-
-        function animate() {
-            requestAnimationFrame(animate);
+        
+        // 初始化角色控制
+        function initCharacterControls() {
+            window.addEventListener('keydown', (event) => {
+                keys[event.code] = true;
+            });
+            window.addEventListener('keyup', (event) => {
+                keys[event.code] = false;
+            });
+        }
+        
+        // 初始化角色物理
+        function initCharacterPhysics() {
+            const characterShape = new CANNON.Sphere(0.3);
+            characterBody = new CANNON.Body({
+                mass: 1,
+                position: new CANNON.Vec3(0, 0.9, 0)
+            });
+            characterBody.addShape(characterShape);
+            physicsWorld.addBody(characterBody);
+        }
+        
+        // 更新角色
+        function updateCharacter() {
+            if (!characterBody) return;
             
-            // Car controls
-            if(car) {
-                const speed = 0.15;
-                const steering = 0.03;
-                const wheelRotation = 0.05;
-                
-                if(keys['ArrowUp']) {
-                    car.position.z -= Math.cos(car.rotation.y) * speed;
-                    car.position.x -= Math.sin(car.rotation.y) * speed;
+            const force = new CANNON.Vec3();
+            if (keys['KeyW']) {
+                force.z = -1;
+            }
+            if (keys['KeyS']) {
+                force.z = 1;
+            }
+            if (keys['KeyA']) {
+                force.x = -1;
+            }
+            if (keys['KeyD']) {
+                force.x = 1;
+            }
+            characterBody.applyLocalForce(force);
+            
+            character.position.copy(characterBody.position);
+            character.quaternion.copy(characterBody.quaternion);
+        }
+        
+        // 初始化碰撞检测
+        function initCollisions() {
+            // 车辆碰撞体
+            const carShape = new CANNON.Box(new CANNON.Vec3(1.5, 0.5, 3));
+            const carBody = new CANNON.Body({ mass: 800 });
+            carBody.addShape(carShape);
+            physicsWorld.addBody(carBody);
+            
+            carBody.position.copy(car.position);
+            carBody.quaternion.copy(car.quaternion);
+            
+            carBody.addEventListener('collide', (e) => {
+                if(e.body === characterBody) {
+                    const impactForce = e.contact.getImpactVelocityAlongNormal();
+                    if(impactForce > 5) {
+                        carBody.velocity.scale(0.5);
+                        characterBody.velocity.scale(0.7);
+                    }
+                }
+            });
+        }
+        
+        // 初始化机甲
+        function loadMecha() {
+            new THREE.GLTFLoader().load(
+                'https://cdn.jsdelivr.net/gh/pmndrs/gltfjsx@6.0.2/public/models/mech_drone.glb',
+                (gltf) => {
+                    const mecha = gltf.scene;
+                    mecha.traverse(child => {
+                        if(child.isMesh) {
+                            child.material = new THREE.MeshStandardMaterial({
+                                color: 0x445566,
+                                metalness: 0.95,
+                                roughness: 0.3,
+                                envMapIntensity: 2
+                            });
+                            child.castShadow = true;
+                        }
+                    });
                     
-                    if(wheelFL) wheelFL.rotation.z += wheelRotation;
-                    if(wheelFR) wheelFR.rotation.z += wheelRotation;
+                    // 机甲物理属性
+                    const mechaShape = new CANNON.Box(new CANNON.Vec3(1.5, 3, 1.5));
+                    const mechaBody = new CANNON.Body({
+                        mass: 1000,
+                        position: new CANNON.Vec3(20, 5, 0)
+                    });
+                    mechaBody.addShape(mechaShape);
+                    physicsWorld.addBody(mechaBody);
+                    
+                    mecha.position.copy(mechaBody.position);
+                    mecha.quaternion.copy(mechaBody.quaternion);
+                    mecha.scale.set(0.8, 0.8, 0.8);
+                    scene.add(mecha);
                 }
-                
-                if(keys['ArrowLeft']) {
-                    car.rotation.y += steering;
-                    if(wheelFL) wheelFL.rotation.x = Math.PI/6;
-                    if(wheelFR) wheelFR.rotation.x = Math.PI/6;
-                }
-                
-                // Update camera position
-                camera.position.copy(car.position)
-                    .add(new THREE.Vector3(
-                        -8 * Math.sin(car.rotation.y),
-                        4,
-                        -8 * Math.cos(car.rotation.y)
-                    ));
-                controls.target.copy(car.position);
-            }
-
-            controls.update();
-            composer.render();
+            );
         }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth/window.innerHeight;
+        
+        // 初始化互动灯光
+        function initInteractiveLights() {
+            const spotlight = new THREE.SpotLight(0x00ffff, 50);
+            spotlight.angle = Math.PI/4;
+            spotlight.penumbra = 0.2;
+            spotlight.position.set(-30, 15, -30);
+            spotlight.target.position.set(0, 0, 0);
+            spotlight.castShadow = true;
+            scene.add(spotlight);
+            scene.add(spotlight.target);
+            
+            // 灯光移动路径
+            const lightPath = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(-30, 15, -30),
+                new THREE.Vector3(30, 10, -30),
+                new THREE.Vector3(30, 15, 30),
+                new THREE.Vector3(-30, 10, 30)
+            ], true);
+            
+            // 灯光移动动画
+            let lightProgress = 0;
+            function updateSpotlight() {
+                lightProgress = (lightProgress + 0.0005) % 1;
+                const point = lightPath.getPoint(lightProgress);
+                spotlight.position.copy(point);
+                spotlight.target.position.lerp(car?.position || new THREE.Vector3(), 0.1);
+            }
+            setInterval(updateSpotlight, 16);
+        }
+        
+        // 创建HUD
+        function createHUD() {
+            const hud = document.getElementById('hud');
+            
+            function updateHUD() {
+                if(!isMechaActive) return;
+                hud.innerHTML = `
+                    ARMOR: ${Math.round(100)}%<br>
+                    ENERGY: ${Math.round(80)}%<br>
+                    JETPACK: ${Math.round(params.bloomStrength*100)}%
+                `;
+                requestAnimationFrame(updateHUD);
+            }
+            updateHUD();
+        }
+        
+        // 初始化GUI控制器
+        function initGUI() {
+            const gui = new dat.GUI();
+            
+            // 天气控制
+            gui.add({weather: 'clear'}, 'weather', ['clear', 'rain', 'snow'])
+                .onChange(value => {
+                    weatherType = value;
+                });
+            
+            // 画质设置
+            const qualityFolder = gui.addFolder('画质设置');
+            qualityFolder.add(params, 'exposure', 0.5, 2).name('HDR曝光');
+            qualityFolder.add(params, 'bloomStrength', 0, 2).name('泛光强度');
+            
+            // 角色控制
+            const characterFolder = gui.addFolder('角色控制');
+            characterFolder.add(characterBody.velocity, 'x', -10, 10).name('X速度');
+            characterFolder.add(characterBody.velocity, 'z', -10, 10).name('Z速度');
+            
+            // 机甲控制
+            const mechaFolder = gui.addFolder('机甲控制');
+            mechaFolder.add({activate: () => {
+                isMechaActive = !isMechaActive;
+                if(isMechaActive) {
+                    camera.position.set(0, 15, 30);
+                    controls.target = character.position;
+                    document.getElementById('hud').style.display = 'block';
+                } else {
+                    camera.position.copy(car.position).add(new THREE.Vector3(-8, 4, -8));
+                    controls.target = car.position;
+                    document.getElementById('hud').style.display = 'none';
+                }
+            }}, 'activate').name('激活机甲');
+        }
+        
+        // 窗口大小调整
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
             composer.setSize(window.innerWidth, window.innerHeight);
-        });
+        }
+        
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // 更新物理模拟
+            const delta = clock.getDelta();
+            physicsWorld.step(1/60, delta, 3);
+            
+            // 更新角色
+            updateCharacter();
+            
+            // 更新NPC车辆
+            updateNPCs();
+            
+            // 更新天气
+            updateWeather();
+            
+            // 更新建筑灯光
+            cityBuildings.forEach(building => {
+                building.traverse(child => {
+                    if(child.material?.emissiveIntensity !== undefined) {
+                        child.material.emissiveIntensity = 
+                            Math.abs(Math.sin(Date.now()/1000 + child.position.x)) * 0.3;
+                    }
+                });
+            });
+            
+            // 更新后期处理参数
+            composer.passes[2].strength = params.bloomStrength;
+            composer.passes[3].toneMappingExposure = params.exposure;
+            
+            // 更新相机控制
+            controls.update();
+            
+            // 渲染场景
+            composer.render();
+        }
+        
+        // 启动场景
+        init();
+        animate();
     </script>
 </body>
 </html>
