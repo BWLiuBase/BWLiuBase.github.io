@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频自动播放与跳转</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        video {
+            width: 100%;
+            max-width: 600px;
+            margin: 10px 0;
+            /* 隐藏视频的播放控制栏 */
+            controls=false;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: rgba(255, 255, 255, 0.7); /* 白色半透明 */
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: none; /* 初始时隐藏按钮 */
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: rgba(255, 255, 255, 1); /* 鼠标悬停时变为完全不透明 */
+        }
+    </style>
+</head>
+<body>
+    <h1>视频自动播放与跳转</h1>
+    <video id="video" src="video.mp4"></video>
+    <button id="enterButton">进入</button>
+
+    <script>
+        const video = document.getElementById('video');
+        const enterButton = document.getElementById('enterButton');
+
+        // 自动播放视频
+        // 由于浏览器限制，自动播放可能需要用户交互
+        // 这里使用一个技巧，通过用户点击页面来触发自动播放
+        document.body.addEventListener('click', function() {
+            video.play();
+            // 移除事件监听器，避免重复触发
+            document.body.removeEventListener('click', arguments.callee);
+        });
+
+        // 当视频播放结束时，显示按钮
+        video.addEventListener('ended', () => {
+            enterButton.style.display = 'block';
+        });
+
+        // 点击按钮跳转到index.html
+        enterButton.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
